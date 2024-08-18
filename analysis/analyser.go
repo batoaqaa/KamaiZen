@@ -15,7 +15,8 @@ type Message struct {
 }
 
 type Parser struct {
-	parser *sitter.Parser
+	parser   *sitter.Parser
+	language *sitter.Language
 }
 
 func NewParser() *Parser {
@@ -25,7 +26,12 @@ func NewParser() *Parser {
 }
 
 func (p *Parser) SetLanguage() {
-	p.parser.SetLanguage(sitter.NewLanguage(kamailio_cfg.Language()))
+	p.language = sitter.NewLanguage(kamailio_cfg.Language())
+	p.parser.SetLanguage(p.language)
+}
+
+func (p *Parser) GetLanguage() *sitter.Language {
+	return p.language
 }
 
 func (p *Parser) Parse(sourceCode []byte) *sitter.Node {
@@ -68,11 +74,75 @@ func StartAnalyser(c <-chan State, logger *log.Logger, wg *sync.WaitGroup) {
 				// start the analysis of the text document here
 				node := parser.Parse([]byte(content))
 				stateTree.AddNode(uri, node)
-				logger.Println("Analyser Parsed document with URI: ", uri)
+				logger.Printf("-----------------")
+				// // stateTree.TraverseNode(uri, node, logger, 0)
+				// node = node.Child(0)
+				// nodeCount := node.ChildCount()
+				// logger.Printf("countChildren %d", nodeCount)
+				// logger.Printf("%s", node.Symbol())
+				// logger.Printf("%d, %d", node.StartPoint(), node.EndPoint())
+				// logger.Printf("value %s", node.Child(0).IsExtra)
+				// logger.Printf("sibling %s", node.NextSibling())
+				diagnostics := getDiagnostics(node, parser)
+				for _, diag := range diagnostics {
+					logger.Printf("Diagnostic: %s at %d:%d", diag.Message, diag.Line, diag.Column)
+				}
 
 			}
 
 		}
 	}
 
+}
+
+// match the document lines with the node tree
+
+func (s *StateTree) TraverseNode(uri lsp.DocumentURI, node *sitter.Node, logger *log.Logger, padding int) {
+	// traverse the node and print the node
+	// logger.Println(node)
+	var i uint32
+	childCount := node.ChildCount()
+	for i = 0; i < childCount; i++ {
+		// Print spaces for padding
+		logger.Printf("%s::%s[%d:%d]%*s", uri, node.Type, node.StartByte(), node.EndByte(), padding, node)
+		child := node.Child(int(i))
+		s.TraverseNode(uri, child, logger, padding+2)
+	}
+}
+
+// Diagnostic represents a syntax issue
+type Diagnostic struct {
+	Message string
+	Line    uint32
+	Column  uint32
+}
+
+// getDiagnostics traverses the parse tree to find issues
+func getDiagnostics(rootNode *sitter.Node, parser *Parser) []Diagnostic {
+	var diagnostics []Diagnostic
+
+	// Example: Check for undeclared variables or any syntax issues
+	queryStr := "(ERROR) @error"
+	q, err := sitter.NewQuery([]byte(queryStr), parser.GetLanguage())
+	if err != nil {
+		log.Fatalf("Failed to create query: %v", err)
+	}
+	cursor := sitter.NewQueryCursor()
+	cursor.Exec(q, rootNode)
+	for {
+		match, ok := cursor.NextMatch()
+		if !ok {
+			break
+		}
+		// Found a syntax error node
+		for _, capture := range match.Captures {
+			node := capture.Node
+			diagnostics = append(diagnostics, Diagnostic{
+				Message: "Syntax error",
+				Line:    node.StartPoint().Row,
+				Column:  node.StartPoint().Column,
+			})
+		}
+	}
+	return diagnostics
 }
