@@ -2,6 +2,7 @@ package analysis
 
 import (
 	"KamaiZen/lsp"
+	"KamaiZen/utils"
 	"fmt"
 )
 
@@ -16,17 +17,27 @@ func NewState() State {
 	}
 }
 
-func (s *State) OpenDocument(uri lsp.DocumentURI, text string) {
+func (s *State) OpenDocument(uri lsp.DocumentURI, text string) []lsp.Diagnostic {
 	s.Documents[uri] = text
 	// start the analysis of the text document here
+	diagnostic := GetDiagnosticsForDocument(uri, text)
+	return diagnostic
 }
 
-func (s *State) ChangeDocument(uri lsp.DocumentURI, changes []lsp.TextDocumentContentChangeEvent) {
+func (s *State) ChangeDocument(uri lsp.DocumentURI, changes []lsp.TextDocumentContentChangeEvent) []lsp.Diagnostic {
 	text := s.Documents[uri]
 	for _, change := range changes {
 		text = change.Apply(text)
 	}
 	s.Documents[uri] = text
+	diagnostic := GetDiagnosticsForDocument(uri, text)
+	return diagnostic
+}
+
+func (s *State) UpdateDocument(uri lsp.DocumentURI, text string) []lsp.Diagnostic {
+	s.Documents[uri] = text
+	diagnostic := GetDiagnosticsForDocument(uri, text)
+	return diagnostic
 }
 
 func (s *State) Hover(id int, uri lsp.DocumentURI, position lsp.Position) lsp.HoverResponse {
@@ -44,4 +55,14 @@ func (s *State) Definition(id int, uri lsp.DocumentURI, position lsp.Position) l
 	// TODO: Implement definition
 	// lookup the text content type from the analysis and return the definition
 	return lsp.NewDefintionProviderResponse(id, fmt.Sprintf("File: %s :: Definition at line %d, character %d", uri, position.Line, position.Character))
+}
+
+func (s *State) Formatting(id int, uri lsp.DocumentURI, options lsp.FormattingOptions) lsp.DocumentFormattingResponse {
+	logger := utils.GetLogger()
+	logger.Println("===?Formatting document with URI: ", uri)
+	edits, error := FormatKamailioCfg(s.Documents[uri])
+	if error != nil {
+		return lsp.NewDocumentFormattingResponse(id, []lsp.TextEdit{})
+	}
+	return lsp.NewDocumentFormattingResponse(id, edits)
 }

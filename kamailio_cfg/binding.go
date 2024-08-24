@@ -3,6 +3,7 @@ package kamailio_cfg
 // #cgo CFLAGS: -std=c11 -fPIC
 // #cgo LDFLAGS: -Wl,--allow-multiple-definition
 // #include "parser.c"
+// // NOTE: if your language has an external scanner, add it here.
 import "C"
 
 import "unsafe"

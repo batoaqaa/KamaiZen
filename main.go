@@ -4,6 +4,7 @@ import (
 	"KamaiZen/analysis"
 	"KamaiZen/lsp"
 	"KamaiZen/rpc"
+	"KamaiZen/utils"
 	"bufio"
 	"encoding/json"
 	"io"
@@ -18,11 +19,11 @@ const (
 	MethodDidChange  = "textDocument/didChange"
 	MethodHover      = "textDocument/hover"
 	MethodDefinition = "textDocument/definition"
+	MethodFormatting = "textDocument/formatting"
 )
 
 func main() {
-	// FIXME: This is a temporary solution
-	logger := getLogger("/home/ibrahim/work/KamaiZen/kamaizen.log")
+	logger := utils.GetLogger()
 	logger.Println("Starting KamaiZen")
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Split(rpc.Split)
@@ -34,7 +35,7 @@ func main() {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
-	go analysis.StartAnalyser(analyser_channel, logger, &wg)
+	go analysis.StartAnalyser(analyser_channel, writer, logger, &wg)
 
 	for scanner.Scan() {
 		msg := scanner.Bytes()
@@ -62,7 +63,7 @@ func handleMessage(writer io.Writer, logger *log.Logger, state analysis.State, m
 		}
 		logger.Printf("Connected to %s with version %s", request.Params.ClientInfo.Name, request.Params.ClientInfo.Version)
 		response := lsp.NewInitializeResponse(request.ID)
-		writeResponse(writer, response)
+		lsp.WriteResponse(writer, response)
 		logger.Println("Sent initialize response")
 
 	case MethodDidOpen:
@@ -72,9 +73,8 @@ func handleMessage(writer io.Writer, logger *log.Logger, state analysis.State, m
 			return
 		}
 		logger.Println("Opened document with URI: ", notification.Params.TextDocument.URI)
-		logger.Println("Document content: ", notification.Params.TextDocument.Text)
+		// logger.Println("Document content: ", notification.Params.TextDocument.Text)
 		state.OpenDocument(notification.Params.TextDocument.URI, notification.Params.TextDocument.Text)
-		logger.Println("Sending to analyser Document content after open: ", state.Documents[notification.Params.TextDocument.URI])
 		analyser_channel <- state
 
 	case MethodDidChange:
@@ -83,10 +83,10 @@ func handleMessage(writer io.Writer, logger *log.Logger, state analysis.State, m
 			logger.Println("Error unmarshalling didChange notification: ", error)
 			return
 		}
-		logger.Println("Changed document with URI: ", notification.Params.TextDocument.URI)
-		logger.Println("Document content: ", notification.Params.ContentChanges[0].Text)
-		state.ChangeDocument(notification.Params.TextDocument.URI, notification.Params.ContentChanges)
-		logger.Println("Document content after change: ", state.Documents[notification.Params.TextDocument.URI])
+		for _, change := range notification.Params.ContentChanges {
+			state.UpdateDocument(notification.Params.TextDocument.URI, change.Text)
+		}
+		analyser_channel <- state
 
 	case MethodHover:
 		var request lsp.HoverRequest
@@ -97,8 +97,8 @@ func handleMessage(writer io.Writer, logger *log.Logger, state analysis.State, m
 		logger.Println("Hover request for document with URI: ", request.Params.TextDocument.URI)
 		logger.Println("Position: ", request.Params.Position)
 		response := state.Hover(request.ID, request.Params.TextDocument.URI, request.Params.Position)
-		writeResponse(writer, response)
-		logger.Printf("Sent hover response %s", response)
+		logger.Printf("Sent hover response %v", response)
+		lsp.WriteResponse(writer, response)
 
 	case MethodDefinition:
 		var request lsp.DefinitionProviderRequest
@@ -109,22 +109,18 @@ func handleMessage(writer io.Writer, logger *log.Logger, state analysis.State, m
 		logger.Println("Definition request for document with URI: ", request.Params.TextDocument.URI)
 		logger.Println("Position: ", request.Params.Position)
 		response := state.Definition(request.ID, request.Params.TextDocument.URI, request.Params.Position)
-		writeResponse(writer, response)
-		logger.Printf("Sent definition response %s", response)
-
+		logger.Printf("Sent definition response %v", response)
+		lsp.WriteResponse(writer, response)
+	case MethodFormatting:
+		var request lsp.DocumentFormattingRequest
+		if error := json.Unmarshal(contents, &request); error != nil {
+			logger.Println("Error unmarshalling formatting request: ", error)
+			return
+		}
+		logger.Println("Formatting request for document with URI: ", request)
+		response := state.Formatting(request.ID, request.Params.TextDocument.URI, request.Params.Options)
+		// logger.Printf("Sent formatting response %v", response)
+		lsp.WriteResponse(writer, response)
 	}
 
-}
-
-func writeResponse(writer io.Writer, response interface{}) {
-	reply := rpc.EncodeMessage(response)
-	writer.Write([]byte(reply))
-}
-
-func getLogger(filename string) *log.Logger {
-	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err != nil {
-		panic(err)
-	}
-	return log.New(file, "[KamaiZen]", log.Ldate|log.Ltime|log.Lshortfile)
 }

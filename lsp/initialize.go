@@ -27,9 +27,10 @@ type InitializeResult struct {
 
 type ServerCapabilities struct {
 	// TODO: incremental instead of full
-	TextDocumentSync   int  `json:"textDocumentSync"`
-	HoverProvider      bool `json:"hoverProvider"`
-	DefinitionProvider bool `json:"definitionProvider"`
+	TextDocumentSync           int  `json:"textDocumentSync"`
+	HoverProvider              bool `json:"hoverProvider"`
+	DefinitionProvider         bool `json:"definitionProvider"`
+	DocumentFormattingProvider bool `json:"documentFormattingProvider"`
 	// TODO: Add more capabilities
 	// CodeActionProvider bool `json:"codeActionProvider"`
 }
@@ -48,9 +49,10 @@ func NewInitializeResponse(id int) InitializeResponse {
 		Result: InitializeResult{
 			Capabilities: ServerCapabilities{
 				// TODO: incremental instead of full
-				TextDocumentSync:   1,
-				HoverProvider:      true,
-				DefinitionProvider: true,
+				TextDocumentSync:           1,
+				HoverProvider:              true,
+				DefinitionProvider:         true,
+				DocumentFormattingProvider: true,
 			},
 			ServerInfo: ServerInfo{
 				Name:    "KamaiZen",
