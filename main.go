@@ -2,8 +2,10 @@ package main
 
 import (
 	"KamaiZen/analysis"
+	"KamaiZen/docs"
 	"KamaiZen/lsp"
 	"KamaiZen/rpc"
+	"KamaiZen/settings"
 	"KamaiZen/utils"
 	"bufio"
 	"encoding/json"
@@ -29,6 +31,9 @@ func main() {
 	scanner.Split(rpc.Split)
 	state := analysis.NewState()
 	writer := os.Stdout
+
+	settings := settings.NewLSPSettings("/home/ibrahim/work/kamailio", "/path/to/root")
+	docs.Initialise(settings)
 
 	analyser_channel := make(chan analysis.State)
 

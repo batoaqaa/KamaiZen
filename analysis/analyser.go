@@ -56,6 +56,9 @@ type StateTree struct {
 	nodes map[lsp.DocumentURI]*sitter.Node
 }
 
+// module level state tree
+var stateTreeCache StateTree
+
 func NewStateTree() StateTree {
 	return StateTree{
 		nodes: make(map[lsp.DocumentURI]*sitter.Node),
@@ -100,6 +103,7 @@ func StartAnalyser(c <-chan State, writer io.Writer, logger *log.Logger, wg *syn
 					// logger.Printf("Diagnostics: %v", diagnostics)
 					lsp.WriteResponse(writer, lsp.NewPublishDiagnosticNotification(uri, diagnostics))
 				}
+				stateTreeCache = stateTree
 			}
 		}
 	}
@@ -124,6 +128,25 @@ type Diagnostic struct {
 	Message string
 	Line    uint32
 	Column  uint32
+}
+
+func GetFunctionNameAtPosition(uri lsp.DocumentURI, position lsp.Position, source_code []byte) string {
+	node := stateTreeCache.nodes[uri]
+	return getFunctionName(node, position, source_code)
+}
+
+func getFunctionName(node *sitter.Node, position lsp.Position, source_code []byte) string {
+	nodeAtPosition := node.NamedDescendantForPointRange(
+		sitter.Point{
+			Row:    uint32(position.Line),
+			Column: uint32(position.Character),
+		},
+		sitter.Point{
+			Row:    uint32(position.Line),
+			Column: uint32(position.Character),
+		})
+	functionName := nodeAtPosition.Content(source_code)
+	return functionName
 }
 
 // getDiagnostics traverses the parse tree to find issues

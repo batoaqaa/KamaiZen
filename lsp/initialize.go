@@ -49,10 +49,11 @@ func NewInitializeResponse(id int) InitializeResponse {
 		Result: InitializeResult{
 			Capabilities: ServerCapabilities{
 				// TODO: incremental instead of full
-				TextDocumentSync:           1,
-				HoverProvider:              true,
-				DefinitionProvider:         true,
-				DocumentFormattingProvider: true,
+				TextDocumentSync:   1,
+				HoverProvider:      true,
+				DefinitionProvider: true,
+				// TODO: for now formatter isnt working properly
+				DocumentFormattingProvider: false,
 			},
 			ServerInfo: ServerInfo{
 				Name:    "KamaiZen",
