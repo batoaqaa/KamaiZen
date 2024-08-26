@@ -28,7 +28,7 @@ func (f *FunctionDocumentationMap) AddFunctionDoc(functionDoc FunctionDocumentat
 		if !overwrite {
 			return errors.New("Function Documentation already exists")
 		} else {
-			logger.Info("Overwrting function documentation for function: ", functionDoc.Name)
+			logger.Debug("Overwrting function documentation: ", functionDoc.Name)
 		}
 	}
 	f.Functions[functionDoc.Name] = functionDoc

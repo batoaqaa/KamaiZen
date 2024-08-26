@@ -68,7 +68,7 @@ func (m *ModuleDocs) AddFunctionDoc(moduleName string, functionDocs FunctionDocu
 		if !overwrite {
 			return errors.New("Function Documentation already exists")
 		} else {
-			logger.Info("Overwrting function documentation for module: ", moduleName)
+			logger.Debug("Overwrting function documentation for module: ", moduleName)
 		}
 	}
 	m.Functions[moduleName] = functionDocs

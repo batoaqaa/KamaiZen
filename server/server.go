@@ -13,13 +13,8 @@ import (
 
 func StartServer(wg *sync.WaitGroup, state analysis.State, analyser_channel chan analysis.State) {
 	defer wg.Done()
-	wg.Add(1)
-	go scan_input(wg, state, analyser_channel)
-}
-
-func scan_input(wg *sync.WaitGroup, state analysis.State, analyser_channel chan analysis.State) {
-	defer wg.Done()
 	scanner := bufio.NewScanner(os.Stdin)
+	logger.Info("Starting server")
 	scanner.Split(rpc.Split)
 	for scanner.Scan() {
 		msg := scanner.Bytes()
@@ -45,7 +40,7 @@ func handleMessage(state analysis.State, method string, contents []byte, analyse
 		logger.Infof("Connected to %s with version %s", request.Params.ClientInfo.Name, request.Params.ClientInfo.Version)
 		response := lsp.NewInitializeResponse(request.ID)
 		lsp.WriteResponse(response)
-		logger.Info("Sent initialize response")
+		logger.Debug("Sent initialize response")
 
 	case MethodDidOpen:
 		var notification lsp.DidOpenTextDocumentNotification
@@ -54,7 +49,6 @@ func handleMessage(state analysis.State, method string, contents []byte, analyse
 			return
 		}
 		logger.Info("Opened document with URI: ", notification.Params.TextDocument.URI)
-		// logger.Println("Document content: ", notification.Params.TextDocument.Text)
 		state.OpenDocument(notification.Params.TextDocument.URI, notification.Params.TextDocument.Text)
 		analyser_channel <- state
 
@@ -75,8 +69,8 @@ func handleMessage(state analysis.State, method string, contents []byte, analyse
 			logger.Error("Error unmarshalling hover request: ", error)
 			return
 		}
-		logger.Info("Hover request for document with URI: ", request.Params.TextDocument.URI)
-		logger.Info("Position: ", request.Params.Position)
+		logger.Debug("Hover request for document with URI: ", request.Params.TextDocument.URI)
+		logger.Debug("Position: ", request.Params.Position)
 		response := state.Hover(request.ID, request.Params.TextDocument.URI, request.Params.Position)
 		logger.Infof("Sent hover response %v", response)
 		lsp.WriteResponse(response)
@@ -87,10 +81,10 @@ func handleMessage(state analysis.State, method string, contents []byte, analyse
 			logger.Error("Error unmarshalling definition request: ", error)
 			return
 		}
-		logger.Info("Definition request for document with URI: ", request.Params.TextDocument.URI)
-		logger.Info("Position: ", request.Params.Position)
+		logger.Debug("Definition request for document with URI: ", request.Params.TextDocument.URI)
+		logger.Debug("Position: ", request.Params.Position)
 		response := state.Definition(request.ID, request.Params.TextDocument.URI, request.Params.Position)
-		logger.Infof("Sent definition response %v", response)
+		logger.Debug("Sent definition response %v", response)
 		lsp.WriteResponse(response)
 	case MethodFormatting:
 		var request lsp.DocumentFormattingRequest
@@ -98,7 +92,7 @@ func handleMessage(state analysis.State, method string, contents []byte, analyse
 			logger.Error("Error unmarshalling formatting request: ", error)
 			return
 		}
-		logger.Info("Formatting request for document with URI: ", request)
+		logger.Debug("Formatting request for document with URI: ", request)
 		response := state.Formatting(request.ID, request.Params.TextDocument.URI, request.Params.Options)
 		lsp.WriteResponse(response)
 	}

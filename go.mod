@@ -1,5 +1,5 @@
 module KamaiZen
 
-go 1.22.4
+go 1.23.0
 
-require github.com/smacker/go-tree-sitter v0.0.0-20230720070738-0d0a9f78d8f8
+require github.com/smacker/go-tree-sitter v0.0.0-20240625050157-a31a98a7c0f6
