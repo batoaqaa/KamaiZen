@@ -15,11 +15,6 @@ type DocumentFormattingParams struct {
 	Options      FormattingOptions      `json:"options"`
 }
 
-// type FormattingNotification struct {
-// 	Notification
-// 	Params DocumentFormattingParams `json:"params"`
-// }
-
 type DocumentFormattingRequest struct {
 	Request
 	Params DocumentFormattingParams `json:"params"`

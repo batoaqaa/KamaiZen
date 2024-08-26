@@ -1,0 +1,19 @@
+digraph "TSLanguage"
+{
+ // LATEX_PDF_SIZE
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="TSLanguage",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black",tooltip=" "];
+  Node2 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" field_map_slices" ,fontname="Helvetica"];
+  Node2 [label="TSFieldMapSlice",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structTSFieldMapSlice.html",tooltip=" "];
+  Node3 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" field_map_entries" ,fontname="Helvetica"];
+  Node3 [label="TSFieldMapEntry",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structTSFieldMapEntry.html",tooltip=" "];
+  Node4 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" symbol_metadata" ,fontname="Helvetica"];
+  Node4 [label="TSSymbolMetadata",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structTSSymbolMetadata.html",tooltip=" "];
+  Node5 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" parse_actions" ,fontname="Helvetica"];
+  Node5 [label="TSParseActionEntry",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$unionTSParseActionEntry.html",tooltip=" "];
+  Node6 -> Node5 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" action" ,fontname="Helvetica"];
+  Node6 [label="TSParseAction",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$unionTSParseAction.html",tooltip=" "];
+  Node7 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" lex_modes" ,fontname="Helvetica"];
+  Node7 [label="TSLexMode",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structTSLexMode.html",tooltip=" "];
+}

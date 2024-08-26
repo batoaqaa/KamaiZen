@@ -1,9 +1,9 @@
 package analysis
 
 import (
-	"KamaiZen/docs"
+	"KamaiZen/document_manager"
+	"KamaiZen/logger"
 	"KamaiZen/lsp"
-	"KamaiZen/utils"
 	"fmt"
 )
 
@@ -42,12 +42,9 @@ func (s *State) UpdateDocument(uri lsp.DocumentURI, text string) []lsp.Diagnosti
 }
 
 func (s *State) Hover(id int, uri lsp.DocumentURI, position lsp.Position) lsp.HoverResponse {
-	// TODO: Implement hover
-	// lookup the text content type from the analysis and return the documentation
-	// for function or variable at the position in the document
 	text := s.Documents[uri]
 	functionName := GetFunctionNameAtPosition(uri, position, []byte(text))
-	documentation := docs.FindFunctionInAllModules(functionName)
+	documentation := document_manager.FindFunctionInAllModules(functionName)
 	return lsp.NewHoverResponse(id, fmt.Sprintf("%s", documentation))
 }
 
@@ -58,8 +55,7 @@ func (s *State) Definition(id int, uri lsp.DocumentURI, position lsp.Position) l
 }
 
 func (s *State) Formatting(id int, uri lsp.DocumentURI, options lsp.FormattingOptions) lsp.DocumentFormattingResponse {
-	logger := utils.GetLogger()
-	logger.Println("===?Formatting document with URI: ", uri)
+	logger.Info("===?Formatting document with URI: ", uri)
 	// edits, error := FormatKamailioCfg(s.Documents[uri])
 	edits, error := IndentKamailioCfg(s.Documents[uri], 4)
 	if error != nil {

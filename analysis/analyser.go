@@ -2,9 +2,8 @@ package analysis
 
 import (
 	"KamaiZen/kamailio_cfg"
+	"KamaiZen/logger"
 	"KamaiZen/lsp"
-	"context"
-	"io"
 	"log"
 	"sync"
 
@@ -13,43 +12,6 @@ import (
 
 type Message struct {
 	state State
-}
-
-type Parser struct {
-	parser   *sitter.Parser
-	language *sitter.Language
-	tree     *sitter.Tree
-}
-
-func NewParser() *Parser {
-	return &Parser{
-		parser: sitter.NewParser(),
-	}
-}
-
-func (p *Parser) SetLanguage() {
-	p.language = sitter.NewLanguage(kamailio_cfg.Language())
-	p.parser.SetLanguage(p.language)
-}
-
-func (p *Parser) GetLanguage() *sitter.Language {
-	return p.language
-}
-
-func (p *Parser) Parse(sourceCode []byte) *sitter.Node {
-	tree, _ := p.parser.ParseCtx(context.Background(), nil, sourceCode)
-	p.tree = tree
-	n := p.tree.RootNode()
-	return n
-}
-
-func (p *Parser) GetTree() *sitter.Tree {
-	return p.tree
-}
-
-func (p *Parser) UpdateTree(content []byte) {
-	newTree, _ := p.parser.ParseCtx(context.Background(), p.tree, content)
-	p.tree = newTree
 }
 
 type StateTree struct {
@@ -70,7 +32,8 @@ func (s *StateTree) AddNode(uri lsp.DocumentURI, node *sitter.Node) {
 }
 
 func GetDiagnosticsForDocument(uri lsp.DocumentURI, content string) []lsp.Diagnostic {
-	parser := NewParser()
+	// TODO: use the previous parser instance
+	parser := kamailio_cfg.NewParser()
 	parser.SetLanguage()
 	node := parser.Parse([]byte(content))
 	_ = node
@@ -78,30 +41,29 @@ func GetDiagnosticsForDocument(uri lsp.DocumentURI, content string) []lsp.Diagno
 	return []lsp.Diagnostic{}
 }
 
-func StartAnalyser(c <-chan State, writer io.Writer, logger *log.Logger, wg *sync.WaitGroup) {
+func StartAnalyser(c <-chan State, wg *sync.WaitGroup) {
 	defer wg.Done()
-	parser := NewParser()
+	// TODO: use the previous parser instance
+	parser := kamailio_cfg.NewParser()
 	parser.SetLanguage()
 	stateTree := NewStateTree()
-	logger.Println("=====Analyser started")
-
+	logger.Info("=====Analyser started")
 	for {
 		select {
 		case state, ok := <-c:
 			if !ok {
-				logger.Println("Channel closed! Exiting...")
+				logger.Info("Channel closed! Exiting...")
 				return
 			}
 			for uri, content := range state.Documents {
 				// start the analysis of the text document here
 				node := parser.Parse([]byte(content))
 				stateTree.AddNode(uri, node)
-				logger.Printf("-----------------")
-				diagnostics := getDiagnostics(logger, node, parser)
+				diagnostics := getDiagnostics(node, parser)
 				if diagnostics != nil {
 
 					// logger.Printf("Diagnostics: %v", diagnostics)
-					lsp.WriteResponse(writer, lsp.NewPublishDiagnosticNotification(uri, diagnostics))
+					lsp.WriteResponse(lsp.NewPublishDiagnosticNotification(uri, diagnostics))
 				}
 				stateTreeCache = stateTree
 			}
@@ -113,7 +75,7 @@ func StartAnalyser(c <-chan State, writer io.Writer, logger *log.Logger, wg *syn
 
 func (s *StateTree) TraverseNode(uri lsp.DocumentURI, node *sitter.Node, logger *log.Logger, padding int) {
 	// traverse the node and print the node
-	// logger.Println(node)
+	// logger.Info(node)
 	var i uint32
 	childCount := node.ChildCount()
 	for i = 0; i < childCount; i++ {
@@ -150,7 +112,7 @@ func getFunctionName(node *sitter.Node, position lsp.Position, source_code []byt
 }
 
 // getDiagnostics traverses the parse tree to find issues
-func getDiagnostics(logger *log.Logger, rootNode *sitter.Node, parser *Parser) []lsp.Diagnostic {
+func getDiagnostics(rootNode *sitter.Node, parser *kamailio_cfg.Parser) []lsp.Diagnostic {
 	var diagnostics []lsp.Diagnostic
 
 	// get syntax errors
@@ -161,12 +123,12 @@ func getDiagnostics(logger *log.Logger, rootNode *sitter.Node, parser *Parser) [
 	// get deprecated comments
 	diagnostics = append(diagnostics, getDeprecatedComments(rootNode, parser)...)
 	// get unreachable code
-	diagnostics = append(diagnostics, getUnreachableCode(logger, rootNode, parser)...)
+	diagnostics = append(diagnostics, getUnreachableCode(rootNode, parser)...)
 	// logger.Printf("Diagnostics: %v", diagnostics)
 	return diagnostics
 }
 
-func getDeprecatedComments(node *sitter.Node, parser *Parser) []lsp.Diagnostic {
+func getDeprecatedComments(node *sitter.Node, parser *kamailio_cfg.Parser) []lsp.Diagnostic {
 	var diagnostics []lsp.Diagnostic
 
 	queryStr := "(deprecated_comment) @deprecated"
@@ -191,7 +153,7 @@ func getDeprecatedComments(node *sitter.Node, parser *Parser) []lsp.Diagnostic {
 
 }
 
-func getSyntaxErrors(node *sitter.Node, parser *Parser) []lsp.Diagnostic {
+func getSyntaxErrors(node *sitter.Node, parser *kamailio_cfg.Parser) []lsp.Diagnostic {
 	var diagnostics []lsp.Diagnostic
 	queryStr := "(ERROR) @error"
 	q, err := sitter.NewQuery([]byte(queryStr), parser.GetLanguage())
@@ -235,7 +197,7 @@ func addDiagnostic(message string, node *sitter.Node, severity lsp.DiagnosticSev
 
 }
 
-func getUnreachableCode(logger *log.Logger, node *sitter.Node, parser *Parser) []lsp.Diagnostic {
+func getUnreachableCode(node *sitter.Node, parser *kamailio_cfg.Parser) []lsp.Diagnostic {
 	// check for unreachable code
 	// get compound statement and core function
 	var diagnostics []lsp.Diagnostic

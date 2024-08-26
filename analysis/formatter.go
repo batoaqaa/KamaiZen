@@ -2,8 +2,8 @@ package analysis
 
 import (
 	"KamaiZen/kamailio_cfg"
+	"KamaiZen/logger"
 	"KamaiZen/lsp"
-	"KamaiZen/utils"
 	"bytes"
 	"context"
 
@@ -14,9 +14,8 @@ import (
 
 func FormatKamailioCfg(content string) ([]lsp.TextEdit, error) {
 	tabsize := 4
-	logger := utils.GetLogger()
 	sourceCode := []byte(content)
-	parser := NewParser()
+	parser := kamailio_cfg.NewParser()
 	parser.SetLanguage()
 
 	// this is the root node of the tree
@@ -33,7 +32,7 @@ func FormatKamailioCfg(content string) ([]lsp.TextEdit, error) {
 			rightNode := node.ChildByFieldName("right")
 			end_of_statment := node.NextSibling()
 			if end_of_statment != nil {
-				logger.Println("End of statement: ", end_of_statment.Type())
+				logger.Info("End of statement: ", end_of_statment.Type())
 			}
 			// Add the left-hand side, the equals sign with correct spacing, and the right-hand side
 			leftNodeContent := string(sourceCode[leftNode.StartByte():leftNode.EndByte()])
@@ -45,16 +44,16 @@ func FormatKamailioCfg(content string) ([]lsp.TextEdit, error) {
 			formattedContent.WriteString(leftNodeContent)
 			formattedContent.WriteString(" = ") // Ensure exactly one space on both sides
 			formattedContent.WriteString(rightNodeContent)
-			logger.Println("Formatted content: ", formattedContent.String())
+			logger.Info("Formatted content: ", formattedContent.String())
 			edit := lsp.NewTextEdit(leftNode, rightNode, formattedContent.String())
 			edits = append(edits, edit)
-			logger.Printf("=====>Edit: \n%v", edit)
+			logger.Infof("=====>Edit: \n%v", edit)
 			// update the tree as well to reflect the changes
 			// kamailio_cfg.UpdateTree(parser.GetTree(), leftNode, rightNode, formattedContent.String())
 			// parser.UpdateTree([]byte(formattedContent.String()))
 		case kamailio_cfg.ParenthesizedExpressionNodeType:
 			if node.ChildCount() != 3 {
-				logger.Println("Parenthesized expression does not have 3 children")
+				logger.Info("Parenthesized expression does not have 3 children")
 				break
 			}
 			leftBrace := node.Child(0)
@@ -94,7 +93,7 @@ func FormatKamailioCfg(content string) ([]lsp.TextEdit, error) {
 			ifKeyword := node.Child(0) // if keyword
 			formattedContent := strings.Builder{}
 			content := stringPadding + "if "
-			logger.Println("If keyword: ", ifKeyword.Content(sourceCode))
+			logger.Info("If keyword: ", ifKeyword.Content(sourceCode))
 			if content == ifKeyword.Content(sourceCode) {
 				break
 			}
@@ -103,10 +102,10 @@ func FormatKamailioCfg(content string) ([]lsp.TextEdit, error) {
 			edits = append(edits, edit)
 		case "block_start":
 			block_level++
-			logger.Println("INCREASING Block level: ", block_level)
+			logger.Info("INCREASING Block level: ", block_level)
 		case "block_end":
 			block_level--
-			logger.Println("DECREASING Block level: ", block_level)
+			logger.Info("DECREASING Block level: ", block_level)
 		case "core_function":
 			content := string(sourceCode[node.StartByte():node.EndByte()])
 			content = stringPadding + content
@@ -124,14 +123,13 @@ func FormatKamailioCfg(content string) ([]lsp.TextEdit, error) {
 			// 	logger.Printf("Node type: %v -- continue\n", node.Type())
 		}
 	}
-	logger.Println("Formatting Kamailio configuration file ", edits)
+	logger.Info("Formatting Kamailio configuration file ", edits)
 	TraverseNodeAndApply(root, formatNode)
 	return edits, nil
 }
 
 func applyEditToContent(content string, edit lsp.TextEdit) string {
-	logger := utils.GetLogger()
-	logger.Println("Applying edits to content")
+	logger.Info("Applying edits to content")
 	sourceCode := []byte(content)
 	// split source code 2d array of lines and characters
 	lines := bytes.Split(sourceCode, []byte("\n"))
@@ -145,7 +143,7 @@ func applyEditToContent(content string, edit lsp.TextEdit) string {
 		// splitSourceCode = append(splitSourceCode, bytes.Split(line, nil))
 	}
 
-	logger.Println("Edit: ", edit)
+	logger.Info("Edit: ", edit)
 	startLine := edit.Range.Start.Line
 	startChar := edit.Range.Start.Character
 	endLine := edit.Range.End.Line
@@ -169,12 +167,11 @@ func applyEditToContent(content string, edit lsp.TextEdit) string {
 
 // All siblings should be on the same level
 func IndentKamailioCfg(content string, tabsize int) ([]lsp.TextEdit, error) {
-	logger := utils.GetLogger()
 	sourceCode := []byte(content)
-	parser := NewParser()
+	parser := kamailio_cfg.NewParser()
 	parser.SetLanguage()
 
-	logger.Println("Indenting Kamailio configuration file")
+	logger.Info("Indenting Kamailio configuration file")
 	// this is the root node of the tree
 	root := parser.Parse(sourceCode)
 	edits := []lsp.TextEdit{}
@@ -184,12 +181,10 @@ func IndentKamailioCfg(content string, tabsize int) ([]lsp.TextEdit, error) {
 	// top down call recursively IndentSiblings
 	edits, err := IndentSiblings(root, sourceCode, tabsize, block_level)
 	if err != nil {
-		logger.Println("Error indenting siblings: ", err)
+		logger.Info("Error indenting siblings: ", err)
 		return nil, err
 	}
-
 	return edits, nil
-
 }
 
 func IndentSiblings(root *sitter.Node, sourceCode []byte, tabsize int, block_level int) ([]lsp.TextEdit, error) {
@@ -217,7 +212,6 @@ func IndentSiblings(root *sitter.Node, sourceCode []byte, tabsize int, block_lev
 }
 
 func formatAssignmentExpression(tree *sitter.Tree, node *sitter.Node, parser *sitter.Parser, sourceCode []byte) ([]lsp.TextEdit, *sitter.Tree, error) {
-	logger := utils.GetLogger()
 	edits := []lsp.TextEdit{}
 	leftNode := node.ChildByFieldName("left")
 	rightNode := node.ChildByFieldName("right")
@@ -230,14 +224,14 @@ func formatAssignmentExpression(tree *sitter.Tree, node *sitter.Node, parser *si
 	formattedContent.WriteString(leftNodeContent)
 	formattedContent.WriteString(" = ") // Ensure exactly one space on both sides
 	formattedContent.WriteString(rightNodeContent)
-	logger.Println("Formatted content: ", formattedContent.String())
+	logger.Info("Formatted content: ", formattedContent.String())
 	edit := lsp.NewTextEdit(leftNode, rightNode, formattedContent.String())
 	edits = append(edits, edit)
 	// update the tree as well to reflect the changes
 	kamailio_cfg.UpdateTree(tree, leftNode, rightNode, formattedContent.String())
 	tree, err := parser.ParseCtx(context.Background(), tree, []byte(formattedContent.String()))
 	if err != nil {
-		logger.Println("Error parsing the formatted content: ", err)
+		logger.Info("Error parsing the formatted content: ", err)
 		return nil, nil, err
 	}
 	return edits, tree, nil
