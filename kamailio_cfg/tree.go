@@ -12,6 +12,9 @@ const (
 	AssignmentExpressionNodeType    = "assignment_expression"
 	TopLevelAssignmentNodeType      = "top_level_assignment_expression"
 	CompoundStatementNodeType       = "compound_statement"
+	CallExpressionNodeType          = "call_expression"
+	IdentifierNodeType              = "identifier"
+	ExpressionNodeType              = "expression"
 )
 
 func UpdateTree(tree *sitter.Tree, leftNode, rightNode *sitter.Node, formattedContent string) {

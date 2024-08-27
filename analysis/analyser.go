@@ -1,6 +1,7 @@
 package analysis
 
 import (
+	"KamaiZen/document_manager"
 	"KamaiZen/kamailio_cfg"
 	"KamaiZen/logger"
 	"KamaiZen/lsp"
@@ -245,4 +246,18 @@ func TraverseNodeAndApply(node *sitter.Node, f func(*sitter.Node)) {
 		TraverseNodeAndApply(node.NamedChild(i), f)
 	}
 
+}
+
+func GetCompletionItems(uri lsp.DocumentURI) []lsp.CompletionItem {
+	var completionItems []lsp.CompletionItem
+	functions := document_manager.GetAllAvailableFunctionDocs()
+	for _, function := range functions {
+		completionItems = append(completionItems, lsp.CompletionItem{
+			Detail:        function.Name,
+			Label:         function.Name + "(" + function.Parameters + ")",
+			Documentation: function.Description + "\n" + function.Example,
+		})
+	}
+
+	return completionItems
 }

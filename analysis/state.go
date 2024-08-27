@@ -54,9 +54,14 @@ func (s *State) Definition(id int, uri lsp.DocumentURI, position lsp.Position) l
 	return lsp.NewDefintionProviderResponse(id, fmt.Sprintf("File: %s :: Definition at line %d, character %d", uri, position.Line, position.Character))
 }
 
+func (s *State) TextDocumentCompletion(id int, uri lsp.DocumentURI, position lsp.Position) lsp.CompletionResponse {
+	logger.Debug("Completion request for document with URI: ", uri)
+	items := GetCompletionItems(uri)
+	return lsp.NewCompletionResponse(id, items)
+}
+
 func (s *State) Formatting(id int, uri lsp.DocumentURI, options lsp.FormattingOptions) lsp.DocumentFormattingResponse {
 	logger.Info("===?Formatting document with URI: ", uri)
-	// edits, error := FormatKamailioCfg(s.Documents[uri])
 	edits, error := IndentKamailioCfg(s.Documents[uri], 4)
 	if error != nil {
 		return lsp.NewDocumentFormattingResponse(id, []lsp.TextEdit{})

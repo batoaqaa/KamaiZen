@@ -241,3 +241,31 @@ func FindFunctionInAllModules(functionName string) string {
 	}
 	return "Function not found"
 }
+
+func GetAllAvailableModules() []string {
+	var modules []string
+	for moduleName := range moduleDocumentationMapInstance.ModuleDocs {
+		modules = append(modules, moduleName)
+	}
+	return modules
+}
+
+func GetAllFunctionsInModule(moduleName string) FunctionDocumentationMap {
+	moduleDocs, exists := moduleDocumentationMapInstance.GetModuleDocs(moduleName)
+	if !exists {
+		return FunctionDocumentationMap{}
+	}
+	return moduleDocs.Functions[moduleName]
+}
+
+func GetAllAvailableFunctionDocs() []FunctionDocumentation {
+	var functionDocs []FunctionDocumentation
+	for _, moduleDocs := range moduleDocumentationMapInstance.ModuleDocs {
+		for _, functionDoc := range moduleDocs.Functions {
+			for _, doc := range functionDoc.Functions {
+				functionDocs = append(functionDocs, doc)
+			}
+		}
+	}
+	return functionDocs
+}
