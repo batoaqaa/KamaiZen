@@ -32,15 +32,13 @@ var (
 	_FUNC_REGX_PATTERN *regexp.Regexp = regexp.MustCompile(`^\s*\d+\.\d+\.\s*(\w+)\((.*)\)\s*$`)
 )
 
-/**
- * @brief Parses the provided README content and prints the table of contents.
- * It identifies section headers from lines that match a specific pattern.
- *
- * The function expects the README content to follow a specific format:
- * - Section headers start with a line matching the pattern `TOC_REGX_PATTERN`.
- *
- * @param readme A string containing the content of the README file.
- */
+// brief Parses the provided README content and prints the table of contents.
+// It identifies section headers from lines that match a specific pattern.
+//
+// The function expects the README content to follow a specific format:
+// - Section headers start with a line matching the pattern `TOC_REGX_PATTERN`.
+//
+// readme: A string containing the content of the README file.
 func listTableOfContents(readme string) {
 	lines := strings.Split(readme, "\n")
 	for _, line := range lines {
@@ -50,16 +48,14 @@ func listTableOfContents(readme string) {
 	}
 }
 
-/**
- * @brief Parses the provided README content and extracts a list of unique function names.
- * It identifies function names from lines that match a specific pattern.
- *
- * The function expects the README content to follow a specific format:
- * - Function documentation starts with a line matching the pattern `FUNC_REGX_PATTERN`.
- *
- * @param readme A string containing the content of the README file.
- * @return A slice of strings containing the unique function names found in the README content.
- */
+// Parses the provided README content and extracts a list of unique function names.
+// It identifies function names from lines that match a specific pattern.
+//
+// The function expects the README content to follow a specific format:
+// - Function documentation starts with a line matching the pattern `FUNC_REGX_PATTERN`.
+//
+// readme: A string containing the content of the README file.
+// return: A slice of strings containing the unique function names found in the README content.
 func listFunctions(readme string) []string {
 	lines := strings.Split(readme, "\n")
 	listofFunctions := []string{}
@@ -74,18 +70,16 @@ func listFunctions(readme string) []string {
 	return listofFunctions
 }
 
-/**
- * @brief Parses the provided README content and extracts the documentation
- * for a specific function by its name. It identifies the function's name and parameters
- * from the README content.
- *
- * The function expects the README content to follow a specific format:
- * - Function documentation starts with a line matching the pattern `FUNC_REGX_PATTERN`.
- *
- * @param readme A string containing the content of the README file.
- * @param functionName The name of the function to extract documentation for.
- * @return A FunctionDocumentation struct containing the name and parameters of the specified function.
- */
+// Parses the provided README content and extracts the documentation
+// for a specific function by its name. It identifies the function's name and parameters
+// from the README content.
+//
+// The function expects the README content to follow a specific format:
+// - Function documentation starts with a line matching the pattern `FUNC_REGX_PATTERN`.
+//
+// readme: A string containing the content of the README file.
+// functionName: The name of the function to extract documentation for.
+// return: A FunctionDocumentation struct containing the name and parameters of the specified function.
 func getFunction(readme string, functionName string) FunctionDocumentation {
 	lines := strings.Split(readme, "\n")
 	var functionDoc FunctionDocumentation
@@ -101,19 +95,17 @@ func getFunction(readme string, functionName string) FunctionDocumentation {
 	return functionDoc
 }
 
-/**
- * @brief Parses a slice of strings representing lines of documentation
- * and extracts function documentation details. It identifies function names, parameters,
- * descriptions, and examples from the provided lines.
- *
- * The function expects the documentation to follow a specific format:
- * - Function documentation starts with a line matching the pattern `FUNC_REGEX_PATTERN`.
- * - Descriptions are lines following the function declaration until an "Example" line is encountered.
- * - Examples are lines following the "Example" line. They are contained within ... lines.
- *
- * @param lines A slice of strings where each string is a line of documentation.
- * @return A slice of FunctionDocumentation structs containing the parsed documentation details.
- */
+// Parses a slice of strings representing lines of documentation
+// and extracts function documentation details. It identifies function names, parameters,
+// descriptions, and examples from the provided lines.
+//
+// The function expects the documentation to follow a specific format:
+// - Function documentation starts with a line matching the pattern `FUNC_REGEX_PATTERN`.
+// - Descriptions are lines following the function declaration until an "Example" line is encountered.
+// - Examples are lines following the "Example" line. They are contained within ... lines.
+//
+// lines: A slice of strings where each string is a line of documentation.
+// return: A slice of FunctionDocumentation structs containing the parsed documentation details.
 func extractFunctionDoc(lines []string) []FunctionDocumentation {
 	var functionDocs []FunctionDocumentation
 	var functionDoc FunctionDocumentation
@@ -157,24 +149,23 @@ func extractFunctionDoc(lines []string) []FunctionDocumentation {
 	return functionDocs
 }
 
-/**
- * @brief Initializes the document manager by reading the README files from the specified
- * Kamailio source path and extracting function documentation from them. It then adds the
- * extracted documentation to the module documentation map.
- *
- * The function expects the settings to provide a valid Kamailio source path.
- *
- * @param s An instance of settings.LSPSettings containing the configuration settings.
- *
- * The function performs the following steps:
- * 1. Reads the directory specified by the Kamailio source path.
- * 2. Iterates over each module directory found in the path.
- * 3. Reads the README file from each module directory.
- * 4. Extracts function documentation from the README file.
- * 5. Adds the extracted function documentation to the function documentation map.
- * 6. Adds the function documentation map to the module documentation map.
- * @return An error if there was an issue reading the directory or file.
- */
+// Initializes the document manager by reading the README files from the specified
+// Kamailio source path and extracting function documentation from them. It then adds the
+// extracted documentation to the module documentation map.
+//
+// The function expects the settings to provide a valid Kamailio source path.
+//
+// s: An instance of settings.LSPSettings containing the configuration settings.
+//
+// The function performs the following steps:
+// 1. Reads the directory specified by the Kamailio source path.
+// 2. Iterates over each module directory found in the path.
+// 3. Reads the README file from each module directory.
+// 4. Extracts function documentation from the README file.
+// 5. Adds the extracted function documentation to the function documentation map.
+// 6. Adds the function documentation map to the module documentation map.
+//
+// return: An error if there was an issue reading the directory or file.
 func Initialise(s settings.LSPSettings) error {
 	path := s.KamailioSourcePath() + _MODULES_PATH
 	listOfModules, err := os.ReadDir(path)
@@ -206,16 +197,15 @@ func Initialise(s settings.LSPSettings) error {
 	return nil
 }
 
-/**
- * @brief Retrieves the documentation for a specific function within a specified module.
- * It looks up the module documentation map to find the module and then retrieves the function
- * documentation as a string.
- *
- * @param moduleName The name of the module containing the function.
- * @param functionName The name of the function to retrieve documentation for.
- * @return A string containing the documentation for the specified function. If the module is not found,
- *         it returns "Module not found".
- */
+// Retrieves the documentation for a specific function within a specified module.
+// It looks up the module documentation map to find the module and then retrieves the function
+// documentation as a string.
+//
+// moduleName: The name of the module containing the function.
+// functionName: The name of the function to retrieve documentation for.
+// return: A string containing the documentation for the specified function. If the module is not found,
+//
+//	it returns "Module not found".
 func GetFunctionDoc(moduleName string, functionName string) string {
 	moduleDocs, exists := moduleDocumentationMapInstance.GetModuleDocs(moduleName)
 	if !exists {
@@ -224,15 +214,14 @@ func GetFunctionDoc(moduleName string, functionName string) string {
 	return moduleDocs.GetFunctionDocAsString(moduleName, functionName)
 }
 
-/**
- * @brief Searches for a specific function across all modules and retrieves its documentation.
- * It iterates through the module documentation map to find the module containing the function and then
- * returns the function documentation as a formatted string.
- *
- * @param functionName The name of the function to search for.
- * @return A string containing the documentation for the specified function, including the module name.
- *         If the function is not found in any module, it returns "Function not found".
- */
+// Searches for a specific function across all modules and retrieves its documentation.
+// It iterates through the module documentation map to find the module containing the function and then
+// returns the function documentation as a formatted string.
+//
+// functionName: The name of the function to search for.
+// return: A string containing the documentation for the specified function, including the module name.
+//
+//	If the function is not found in any module, it returns "Function not found".
 func FindFunctionInAllModules(functionName string) string {
 	for moduleName, moduleDocs := range moduleDocumentationMapInstance.ModuleDocs {
 		if _, exists := moduleDocs.Functions[moduleName].Functions[functionName]; exists {
@@ -242,6 +231,10 @@ func FindFunctionInAllModules(functionName string) string {
 	return "Function not found"
 }
 
+// GetAllAvailableModules retrieves the names of all available modules
+// from the module documentation map.
+//
+// return: A slice of strings containing the names of all available modules.
 func GetAllAvailableModules() []string {
 	var modules []string
 	for moduleName := range moduleDocumentationMapInstance.ModuleDocs {
@@ -250,6 +243,12 @@ func GetAllAvailableModules() []string {
 	return modules
 }
 
+// GetAllFunctionsInModule retrieves all function documentation for a specific module.
+//
+// moduleName: The name of the module to retrieve function documentation for.
+// return: A FunctionDocumentationMap containing the documentation for all functions
+//
+//	in the specified module. If the module is not found, it returns an empty FunctionDocumentationMap.
 func GetAllFunctionsInModule(moduleName string) FunctionDocumentationMap {
 	moduleDocs, exists := moduleDocumentationMapInstance.GetModuleDocs(moduleName)
 	if !exists {
@@ -258,6 +257,12 @@ func GetAllFunctionsInModule(moduleName string) FunctionDocumentationMap {
 	return moduleDocs.Functions[moduleName]
 }
 
+// GetAllAvailableFunctionDocs retrieves all available function documentation
+// from the module documentation map.
+//
+// return: A slice of FunctionDocumentation structs containing the documentation
+//
+//	for all functions across all modules.
 func GetAllAvailableFunctionDocs() []FunctionDocumentation {
 	var functionDocs []FunctionDocumentation
 	for _, moduleDocs := range moduleDocumentationMapInstance.ModuleDocs {

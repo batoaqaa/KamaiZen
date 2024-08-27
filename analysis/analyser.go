@@ -253,9 +253,10 @@ func GetCompletionItems(uri lsp.DocumentURI) []lsp.CompletionItem {
 	functions := document_manager.GetAllAvailableFunctionDocs()
 	for _, function := range functions {
 		completionItems = append(completionItems, lsp.CompletionItem{
-			Detail:        function.Name,
-			Label:         function.Name + "(" + function.Parameters + ")",
+			Detail:        function.Name + "(" + function.Parameters + ")",
+			Label:         function.Name + "(" + ")",
 			Documentation: function.Description + "\n" + function.Example,
+			Kind:          lsp.FUNCTION_COMPLETION,
 		})
 	}
 

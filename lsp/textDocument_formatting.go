@@ -1,6 +1,10 @@
 package lsp
 
-import sitter "github.com/smacker/go-tree-sitter"
+import (
+	"KamaiZen/settings"
+
+	sitter "github.com/smacker/go-tree-sitter"
+)
 
 type FormattingOptions struct {
 	TabSize                int  `json:"tabSize"`
@@ -33,7 +37,7 @@ type TextEdit struct {
 func NewDocumentFormattingResponse(id int, edits []TextEdit) DocumentFormattingResponse {
 	return DocumentFormattingResponse{
 		Response: Response{
-			RPC: "2.0",
+			RPC: settings.RPC_VERSION,
 			ID:  id,
 		},
 		Result: edits,

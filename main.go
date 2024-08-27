@@ -13,17 +13,21 @@ import (
 const CHAN_BUFFER = 24
 
 func initialise() {
+	// TODO: load settings from config file
+	settings := settings.NewLSPSettings(
+		"/home/ibrahim/work/kamailio",
+		"/path/to/root", logger.DEBUG)
+	logger.SetLogLevel(settings.LogLevel())
 	logger.Info("Starting KamaiZen")
-	settings := settings.NewLSPSettings("/home/ibrahim/work/kamailio", "/path/to/root")
 	lsp.Initialise()
 	document_manager.Initialise(settings)
 }
 
 func main() {
-	logger.Info("Starting KamaiZen")
-	state := analysis.NewState()
 	initialise()
-	// make buffered channel
+	defer logger.Info("KamaiZen stopped")
+
+	state := analysis.NewState()
 	analyser_channel := make(chan analysis.State, CHAN_BUFFER)
 
 	var wg sync.WaitGroup
@@ -33,5 +37,4 @@ func main() {
 	go lsp.Start(&wg)
 	wg.Wait()
 	close(analyser_channel)
-	defer logger.Info("KamaiZen stopped")
 }

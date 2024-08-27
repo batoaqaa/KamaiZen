@@ -28,9 +28,13 @@ func (s *State) OpenDocument(uri lsp.DocumentURI, text string) []lsp.Diagnostic 
 func (s *State) ChangeDocument(uri lsp.DocumentURI, changes []lsp.TextDocumentContentChangeEvent) []lsp.Diagnostic {
 	text := s.Documents[uri]
 	for _, change := range changes {
-		text = change.Apply(text)
+
+		change.Apply(text)
 	}
 	s.Documents[uri] = text
+	// notify the subscribers of the changes
+	// the parser and the analyser will be listening to the changes
+	// FIXME: Make changes for incremental parsing
 	diagnostic := GetDiagnosticsForDocument(uri, text)
 	return diagnostic
 }

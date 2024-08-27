@@ -1,5 +1,7 @@
 package lsp
 
+import "KamaiZen/settings"
+
 type PublishDiagnosticNotification struct {
 	Notification
 	Params PublishDiagnosticParams `json:"params"`
@@ -24,7 +26,7 @@ func NewPublishDiagnosticNotification(uri DocumentURI, diagnostics []Diagnostic)
 	return PublishDiagnosticNotification{
 		Notification: Notification{
 			Method: "textDocument/publishDiagnostics",
-			RPC:    "2.0",
+			RPC:    settings.RPC_VERSION,
 		},
 		Params: PublishDiagnosticParams{
 			URI:         uri,

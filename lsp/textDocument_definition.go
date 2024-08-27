@@ -1,5 +1,7 @@
 package lsp
 
+import "KamaiZen/settings"
+
 type DefinitionProviderRequest struct {
 	Request
 	Params DefinitionProviderParams `json:"params"`
@@ -22,7 +24,7 @@ type DefinitionProvider struct {
 func NewDefintionProviderResponse(id int, contents string) DefinitionProviderResponse {
 	return DefinitionProviderResponse{
 		Response: Response{
-			RPC: "2.0",
+			RPC: settings.RPC_VERSION,
 			ID:  id,
 		},
 		Result: Location{ // Location is a struct defined in textDocument_hover.go

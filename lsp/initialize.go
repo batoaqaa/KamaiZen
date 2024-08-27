@@ -1,5 +1,7 @@
 package lsp
 
+import "KamaiZen/settings"
+
 type InitializeRequest struct {
 	Request
 	Params InitializeRequestParams `json:"params"`
@@ -27,11 +29,11 @@ type InitializeResult struct {
 
 type ServerCapabilities struct {
 	// TODO: incremental instead of full
-	TextDocumentSync           int            `json:"textDocumentSync"`
-	HoverProvider              bool           `json:"hoverProvider"`
-	DefinitionProvider         bool           `json:"definitionProvider"`
-	DocumentFormattingProvider bool           `json:"documentFormattingProvider"`
-	CompletionProvider         map[string]any `json:"completionProvider"`
+	TextDocumentSync           TextDocumentSyncOptions `json:"textDocumentSync"`
+	HoverProvider              bool                    `json:"hoverProvider"`
+	DefinitionProvider         bool                    `json:"definitionProvider"`
+	DocumentFormattingProvider bool                    `json:"documentFormattingProvider"`
+	CompletionProvider         map[string]any          `json:"completionProvider"`
 	// TODO: Add more capabilities
 	// CodeActionProvider bool `json:"codeActionProvider"`
 }
@@ -49,8 +51,12 @@ func NewInitializeResponse(id int) InitializeResponse {
 		},
 		Result: InitializeResult{
 			Capabilities: ServerCapabilities{
-				// TODO: incremental instead of full
-				TextDocumentSync:   1,
+				TextDocumentSync: TextDocumentSyncOptions{
+					OpenClose: true,
+					Change:    TEXT_DOCUMENT_SYNC_KIND_FULL,
+					// FIXME: update this to incremental
+					// Change:    TEXT_DOCUMENT_SYNC_KIND_INCREMENTAL,
+				},
 				HoverProvider:      true,
 				DefinitionProvider: true,
 				// TODO: for now formatter isnt working properly
@@ -58,8 +64,8 @@ func NewInitializeResponse(id int) InitializeResponse {
 				CompletionProvider:         map[string]any{"resolveProvider": false},
 			},
 			ServerInfo: ServerInfo{
-				Name:    "KamaiZen",
-				Version: "0.0.1",
+				Name:    settings.MY_NAME,
+				Version: settings.KAMAIZEN_VERSION,
 			},
 		},
 	}

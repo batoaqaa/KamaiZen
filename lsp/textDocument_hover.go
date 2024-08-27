@@ -1,5 +1,7 @@
 package lsp
 
+import "KamaiZen/settings"
+
 type HoverRequest struct {
 	Request
 	Params HoverParams `json:"params"`
@@ -22,7 +24,7 @@ type Hover struct {
 func NewHoverResponse(id int, contents string) HoverResponse {
 	return HoverResponse{
 		Response: Response{
-			RPC: "2.0",
+			RPC: settings.RPC_VERSION,
 			ID:  id,
 		},
 		Result: &Hover{
