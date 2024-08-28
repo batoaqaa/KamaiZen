@@ -173,10 +173,12 @@ func Initialise(s settings.LSPSettings) error {
 		return err
 	}
 	// Get All Modules
+	logger.Debug("Starting to add docs for modules", listOfModules)
 	for _, module := range listOfModules {
 		readme, err := os.ReadFile(path + "/" + module.Name() + _READEME_FILE)
 		if err != nil {
-			return err
+			logger.Error(err)
+			continue
 		}
 		functionDocs := extractFunctionDoc(strings.Split(string(readme), "\n"))
 		functionDocsMap := FunctionDocumentationMap{Functions: make(map[string]FunctionDocumentation)}

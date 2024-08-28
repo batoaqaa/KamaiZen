@@ -1,4 +1,5 @@
 #include "tree_sitter/parser.h"
+#include "include.h"
 
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
@@ -95583,13 +95584,7 @@ static const TSParseActionEntry ts_parse_actions[] = {
 #ifdef __cplusplus
 extern "C" {
 #endif
-#ifdef TREE_SITTER_HIDE_SYMBOLS
-#define TS_PUBLIC
-#elif defined(_WIN32)
-#define TS_PUBLIC __declspec(dllexport)
-#else
-#define TS_PUBLIC __attribute__((visibility("default")))
-#endif
+
 
 TS_PUBLIC const TSLanguage *tree_sitter_kamailio_cfg(void) {
   static const TSLanguage language = {
@@ -95621,6 +95616,7 @@ TS_PUBLIC const TSLanguage *tree_sitter_kamailio_cfg(void) {
   };
   return &language;
 }
+
 #ifdef __cplusplus
 }
 #endif

@@ -1,7 +1,7 @@
 package document_manager
 
 import (
-	"KamaiZen/logger"
+	// "KamaiZen/logger"
 	"errors"
 	"fmt"
 )
@@ -24,7 +24,7 @@ func (f *FunctionDocumentationMap) AddFunctionDoc(functionDoc FunctionDocumentat
 		if !overwrite {
 			return errors.New("Function Documentation already exists")
 		} else {
-			logger.Debug("Overwrting function documentation: ", functionDoc.Name)
+			// logger.Debug("Overwrting function documentation: ", functionDoc.Name)
 		}
 	}
 	f.Functions[functionDoc.Name] = functionDoc

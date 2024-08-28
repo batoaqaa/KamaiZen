@@ -38,6 +38,7 @@ func (m *moduleDocumentationMap) AddModuleDocs(moduleName string, moduleDocs Mod
 	if _, exists := m.ModuleDocs[moduleName]; exists && !overwrite {
 		return errors.New("Module already exists")
 	}
+	logger.Debug("docs added for module", moduleName)
 	m.ModuleDocs[moduleName] = moduleDocs
 	return nil
 }
@@ -59,7 +60,7 @@ func (m *ModuleDocs) AddFunctionDoc(moduleName string, functionDocs FunctionDocu
 		if !overwrite {
 			return errors.New("Function Documentation already exists")
 		} else {
-			logger.Debug("Overwrting function documentation for module: ", moduleName)
+			// logger.Debug("Overwriting function documentation for module: ", moduleName)
 		}
 	}
 	m.Functions[moduleName] = functionDocs

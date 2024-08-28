@@ -34,6 +34,7 @@ type ServerCapabilities struct {
 	DefinitionProvider         bool                    `json:"definitionProvider"`
 	DocumentFormattingProvider bool                    `json:"documentFormattingProvider"`
 	CompletionProvider         map[string]any          `json:"completionProvider"`
+	DocumentHighlightProvider  bool                    `json:"documentHighlightProvider"`
 	// TODO: Add more capabilities
 	// CodeActionProvider bool `json:"codeActionProvider"`
 }
@@ -62,6 +63,7 @@ func NewInitializeResponse(id int) InitializeResponse {
 				// TODO: for now formatter isnt working properly
 				DocumentFormattingProvider: false,
 				CompletionProvider:         map[string]any{"resolveProvider": false},
+				DocumentHighlightProvider:  true,
 			},
 			ServerInfo: ServerInfo{
 				Name:    settings.MY_NAME,
