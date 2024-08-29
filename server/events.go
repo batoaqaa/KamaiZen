@@ -94,8 +94,10 @@ func handleDidOpen(state analysis.State, contents []byte, analyser_channel chan 
 		return
 	}
 	logger.Info("Opened document with URI: ", notification.Params.TextDocument.URI)
-	state.OpenDocument(notification.Params.TextDocument.URI, notification.Params.TextDocument.Text)
-	analyser_channel <- state
+	dignostics := analysis.GetState().OpenDocument(notification.Params.TextDocument.URI, notification.Params.TextDocument.Text)
+	if len(dignostics) > 0 {
+		lsp.WriteResponse(lsp.NewPublishDiagnosticNotification(notification.Params.TextDocument.URI, dignostics))
+	}
 }
 
 // handleMessage handles incoming messages and dispatches them to the appropriate handler.

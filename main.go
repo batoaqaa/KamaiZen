@@ -19,6 +19,7 @@ func initialise() {
 		"/path/to/root", logger.DEBUG)
 	logger.SetLogLevel(settings.LogLevel())
 	logger.Info("Starting KamaiZen")
+	analysis.InitializeState()
 	lsp.Initialise()
 	document_manager.Initialise(settings)
 }

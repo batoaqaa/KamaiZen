@@ -123,6 +123,7 @@ func getDiagnostics(rootNode *sitter.Node, parser *kamailio_cfg.Parser) []lsp.Di
 	diagnostics = append(diagnostics, getSyntaxErrors(rootNode, parser)...)
 	// log.Printf("Diagnostics: %v", diagnostics)
 
+	// TODO: Redo these
 	// get deprecated comments
 	diagnostics = append(diagnostics, getDeprecatedComments(rootNode, parser)...)
 	// get unreachable code
