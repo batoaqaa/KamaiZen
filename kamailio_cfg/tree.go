@@ -15,6 +15,7 @@ const (
 	CallExpressionNodeType          = "call_expression"
 	IdentifierNodeType              = "identifier"
 	ExpressionNodeType              = "expression"
+	BlockEndNodeType                = "block_end"
 )
 
 func UpdateTree(tree *sitter.Tree, leftNode, rightNode *sitter.Node, formattedContent string) {

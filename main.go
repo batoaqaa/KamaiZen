@@ -15,7 +15,7 @@ const CHAN_BUFFER = 24
 func initialise() {
 	// TODO: load settings from config file
 	settings := settings.NewLSPSettings(
-		"/Users/ibrahim.shahzad/office/bitbucket/kamailio_ims",
+		"/home/ibrahim/work/kamailio/",
 		"/path/to/root", logger.DEBUG)
 	logger.SetLogLevel(settings.LogLevel())
 	logger.Info("Starting KamaiZen")

@@ -38,8 +38,10 @@ func GetDiagnosticsForDocument(uri lsp.DocumentURI, content string) []lsp.Diagno
 	parser.SetLanguage()
 	node := parser.Parse([]byte(content))
 	_ = node
-	// diagnostics := getDiagnostics(node, parser)
-	return []lsp.Diagnostic{}
+	diagnostics := getDiagnostics(node, parser)
+	return diagnostics
+	// return []lsp.Diagnostic{}
+
 }
 
 func StartAnalyser(c <-chan State, wg *sync.WaitGroup) {
@@ -218,11 +220,12 @@ func getUnreachableCode(node *sitter.Node, parser *kamailio_cfg.Parser) []lsp.Di
 			node := capture.Node
 			for i := 0; i < int(node.NamedChildCount()); i++ {
 				cmpStmtItem := node.NamedChild(i)
-				// logger.Printf("Compound statement item: %v", cmpStmtItem.Type())
 				if cmpStmtItem.Type() == kamailio_cfg.SatementNodeType && cmpStmtItem.NamedChildCount() > 0 {
 					statement := cmpStmtItem.NamedChild(0)
-					// logger.Printf("Block item statement type: %v", statement.Type())
-					if (statement.Type() == kamailio_cfg.CoreFunctionNodeType || statement.Type() == kamailio_cfg.ReturnNodeType) && i != int(node.NamedChildCount())-1 {
+					if (statement.Type() == kamailio_cfg.CoreFunctionNodeType ||
+						statement.Type() == kamailio_cfg.ReturnNodeType) &&
+						i != int(node.NamedChildCount())-1 &&
+						node.NamedChild(i+1).Type() != kamailio_cfg.BlockEndNodeType {
 						diagnostics = append(diagnostics, addDiagnostic("Unreachable code", node.NamedChild(i+1), lsp.WARNING))
 					}
 				}
@@ -248,6 +251,11 @@ func TraverseNodeAndApply(node *sitter.Node, f func(*sitter.Node)) {
 
 }
 
+func getAllAvailableKeywords() []string {
+	// right now, we are hardcoding the keywords and using only SIP headers
+	return SIPHeaders
+}
+
 func GetCompletionItems(uri lsp.DocumentURI) []lsp.CompletionItem {
 	var completionItems []lsp.CompletionItem
 	functions := document_manager.GetAllAvailableFunctionDocs()
@@ -260,5 +268,15 @@ func GetCompletionItems(uri lsp.DocumentURI) []lsp.CompletionItem {
 		})
 	}
 
+	keywords := getAllAvailableKeywords()
+	for _, keyword := range keywords {
+		completionItems = append(completionItems, lsp.CompletionItem{
+			Detail:        keyword,
+			Label:         keyword,
+			Documentation: "SIP Header",
+			Kind:          lsp.VARIABLE_COMPLETION,
+		})
+	}
 	return completionItems
+
 }

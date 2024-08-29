@@ -63,7 +63,7 @@ func NewInitializeResponse(id int) InitializeResponse {
 				// TODO: for now formatter isnt working properly
 				DocumentFormattingProvider: false,
 				CompletionProvider:         map[string]any{"resolveProvider": false},
-				DocumentHighlightProvider:  true,
+				DocumentHighlightProvider:  false,
 			},
 			ServerInfo: ServerInfo{
 				Name:    settings.MY_NAME,

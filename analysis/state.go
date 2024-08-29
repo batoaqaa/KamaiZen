@@ -18,6 +18,9 @@ func NewState() State {
 	}
 }
 
+// register the subscribers for the events
+// subscriber may include the Parser to update the ASY
+
 func (s *State) OpenDocument(uri lsp.DocumentURI, text string) []lsp.Diagnostic {
 	s.Documents[uri] = text
 	// start the analysis of the text document here

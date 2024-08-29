@@ -18,6 +18,7 @@ func StartServer(wg *sync.WaitGroup, state analysis.State, analyser_channel chan
 	// Initialize EventManager and register handlers
 	eventManager := NewEventManager()
 	eventManager.RegisterHandler(MethodInitialize, handleInitialize)
+	eventManager.RegisterHandler(MethodInitialized, handleInitialized)
 	eventManager.RegisterHandler(MethodDidOpen, handleDidOpen)
 	eventManager.RegisterHandler(MethodDidChange, handleDidChange)
 	eventManager.RegisterHandler(MethodHover, handleHover)
