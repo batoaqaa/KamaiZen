@@ -16,8 +16,20 @@ const (
 	IdentifierNodeType              = "identifier"
 	ExpressionNodeType              = "expression"
 	BlockEndNodeType                = "block_end"
+	UnaryExpressionNodeType         = "unary_expression"
+	BinaryExpressionNodeType        = "binary_expression"
 )
 
+// UpdateTree updates the given parse tree by applying an edit operation.
+// It modifies the tree to reflect changes between the leftNode and rightNode,
+// using the provided formatted content.
+//
+// Parameters:
+//
+//	tree *sitter.Tree - The parse tree to be updated.
+//	leftNode *sitter.Node - The starting node of the edit operation.
+//	rightNode *sitter.Node - The ending node of the edit operation.
+//	formattedContent string - The new content to replace the old content between leftNode and rightNode.
 func UpdateTree(tree *sitter.Tree, leftNode, rightNode *sitter.Node, formattedContent string) {
 	tree.Edit(sitter.EditInput{
 		StartIndex:  leftNode.StartByte(),

@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#375EAB">
+
+  <title>embed - Go Documentation Server</title>
+
+<link type="text/css" rel="stylesheet" href="../../lib/godoc/style.css">
+
+<script>window.initFuncs = [];</script>
+<script src="../../lib/godoc/jquery.js" defer></script>
+
+
+
+<script>var goVersion = "go1.18.1";</script>
+<script src="../../lib/godoc/godocs.js" defer></script>
+</head>
+<body>
+
+<div id='lowframe' style="position: fixed; bottom: 0; left: 0; height: 0; width: 100%; border-top: thin solid grey; background-color: white; overflow: auto;">
+...
+</div><!-- #lowframe -->
+
+<div id="topbar" class="wide"><div class="container">
+<div class="top-heading" id="heading-wide"><a href="../index.html">Go Documentation Server</a></div>
+<div class="top-heading" id="heading-narrow"><a href="../index.html">GoDoc</a></div>
+<a href="index.html#" id="menu-button"><span id="menu-button-arrow">&#9661;</span></a>
+<form method="GET" action="http://localhost:8080/search">
+<div id="menu">
+
+<span class="search-box"><input type="search" id="search" name="q" placeholder="Search" aria-label="Search" required><button type="submit"><span><!-- magnifying glass: --><svg width="24" height="24" viewBox="0 0 24 24"><title>submit search</title><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/><path d="M0 0h24v24H0z" fill="none"/></svg></span></button></span>
+</div>
+</form>
+
+</div></div>
+
+
+
+<div id="page" class="wide">
+<div class="container">
+
+
+  <h1>
+    Package embed
+    <span class="text-muted"></span>
+  </h1>
+
+
+
+
+
+
+
+<div id="nav"></div>
+
+
+<!--
+	Copyright 2009 The Go Authors. All rights reserved.
+	Use of this source code is governed by a BSD-style
+	license that can be found in the LICENSE file.
+-->
+<!--
+	Note: Static (i.e., not template-generated) href and id
+	attributes start with "pkg-" to make it impossible for
+	them to conflict with generated attributes (some of which
+	correspond to Go identifiers).
+-->
+
+	<script>
+	document.ANALYSIS_DATA = null;
+	document.CALLGRAPH = null;
+	</script>
+
+	
+		
+		<div id="short-nav">
+			<dl>
+			<dd><code>import "embed"</code></dd>
+			</dl>
+			<dl>
+			<dd><a href="index.html#pkg-overview" class="overviewLink">Overview</a></dd>
+			<dd><a href="index.html#pkg-index" class="indexLink">Index</a></dd>
+			
+				<dd><a href="index.html#pkg-examples" class="examplesLink">Examples</a></dd>
+			
+			
+			</dl>
+		</div>
+		<!-- The package's Name is printed as title by the top-level template -->
+		<div id="pkg-overview" class="toggleVisible">
+			<div class="collapsed">
+				<h2 class="toggleButton" title="Click to show Overview section">Overview ▹</h2>
+			</div>
+			<div class="expanded">
+				<h2 class="toggleButton" title="Click to hide Overview section">Overview ▾</h2>
+				<p>
+Package embed provides access to files embedded in the running Go program.
+</p>
+<p>
+Go source files that import &#34;embed&#34; can use the //go:embed directive
+to initialize a variable of type string, []byte, or [FS] with the contents of
+files read from the package directory or subdirectories at compile time.
+</p>
+<p>
+For example, here are three ways to embed a file named hello.txt
+and then print its contents at run time.
+</p>
+<p>
+Embedding one file into a string:
+</p>
+<pre>import _ &#34;embed&#34;
+
+//go:embed hello.txt
+var s string
+print(s)
+</pre>
+<p>
+Embedding one file into a slice of bytes:
+</p>
+<pre>import _ &#34;embed&#34;
+
+//go:embed hello.txt
+var b []byte
+print(string(b))
+</pre>
+<p>
+Embedded one or more files into a file system:
+</p>
+<pre>import &#34;embed&#34;
+
+//go:embed hello.txt
+var f embed.FS
+data, _ := f.ReadFile(&#34;hello.txt&#34;)
+print(string(data))
+</pre>
+<p>
+# Directives
+</p>
+<p>
+A //go:embed directive above a variable declaration specifies which files to embed,
+using one or more path.Match patterns.
+</p>
+<p>
+The directive must immediately precede a line containing the declaration of a single variable.
+Only blank lines and ‘//’ line comments are permitted between the directive and the declaration.
+</p>
+<p>
+The type of the variable must be a string type, or a slice of a byte type,
+or [FS] (or an alias of [FS]).
+</p>
+<p>
+For example:
+</p>
+<pre>package server
+
+import &#34;embed&#34;
+
+// content holds our static web server content.
+//go:embed image/* template/*
+//go:embed html/index.html
+var content embed.FS
+</pre>
+<p>
+The Go build system will recognize the directives and arrange for the declared variable
+(in the example above, content) to be populated with the matching files from the file system.
+</p>
+<p>
+The //go:embed directive accepts multiple space-separated patterns for
+brevity, but it can also be repeated, to avoid very long lines when there are
+many patterns. The patterns are interpreted relative to the package directory
+containing the source file. The path separator is a forward slash, even on
+Windows systems. Patterns may not contain ‘.’ or ‘..’ or empty path elements,
+nor may they begin or end with a slash. To match everything in the current
+directory, use ‘*’ instead of ‘.’. To allow for naming files with spaces in
+their names, patterns can be written as Go double-quoted or back-quoted
+string literals.
+</p>
+<p>
+If a pattern names a directory, all files in the subtree rooted at that directory are
+embedded (recursively), except that files with names beginning with ‘.’ or ‘_’
+are excluded. So the variable in the above example is almost equivalent to:
+</p>
+<pre>// content is our static web server content.
+//go:embed image template html/index.html
+var content embed.FS
+</pre>
+<p>
+The difference is that ‘image/*’ embeds ‘image/.tempfile’ while ‘image’ does not.
+Neither embeds ‘image/dir/.tempfile’.
+</p>
+<p>
+If a pattern begins with the prefix ‘all:’, then the rule for walking directories is changed
+to include those files beginning with ‘.’ or ‘_’. For example, ‘all:image’ embeds
+both ‘image/.tempfile’ and ‘image/dir/.tempfile’.
+</p>
+<p>
+The //go:embed directive can be used with both exported and unexported variables,
+depending on whether the package wants to make the data available to other packages.
+It can only be used with variables at package scope, not with local variables.
+</p>
+<p>
+Patterns must not match files outside the package&#39;s module, such as ‘.git/*’ or symbolic links.
+Patterns must not match files whose names include the special punctuation characters  &#34; * &lt; &gt; ? ` &#39; | / \ and :.
+Matches for empty directories are ignored. After that, each pattern in a //go:embed line
+must match at least one file or non-empty directory.
+</p>
+<p>
+If any patterns are invalid or have invalid matches, the build will fail.
+</p>
+<p>
+# Strings and Bytes
+</p>
+<p>
+The //go:embed line for a variable of type string or []byte can have only a single pattern,
+and that pattern can match only a single file. The string or []byte is initialized with
+the contents of that file.
+</p>
+<p>
+The //go:embed directive requires importing &#34;embed&#34;, even when using a string or []byte.
+In source files that don&#39;t refer to [embed.FS], use a blank import (import _ &#34;embed&#34;).
+</p>
+<p>
+# File Systems
+</p>
+<p>
+For embedding a single file, a variable of type string or []byte is often best.
+The [FS] type enables embedding a tree of files, such as a directory of static
+web server content, as in the example above.
+</p>
+<p>
+FS implements the [io/fs] package&#39;s [FS] interface, so it can be used with any package that
+understands file systems, including [net/http], [text/template], and [html/template].
+</p>
+<p>
+For example, given the content variable in the example above, we can write:
+</p>
+<pre>http.Handle(&#34;/static/&#34;, http.StripPrefix(&#34;/static/&#34;, http.FileServer(http.FS(content))))
+
+template.ParseFS(content, &#34;*.tmpl&#34;)
+</pre>
+<p>
+# Tools
+</p>
+<p>
+To support tools that analyze Go packages, the patterns found in //go:embed lines
+are available in &ldquo;go list&rdquo; output. See the EmbedPatterns, TestEmbedPatterns,
+and XTestEmbedPatterns fields in the &ldquo;go help list&rdquo; output.
+</p>
+
+				<div id="example_" class="toggle">
+	<div class="collapsed">
+		<p class="exampleHeading toggleButton">▹ <span class="text">Example</span></p>
+	</div>
+	<div class="expanded">
+		<p class="exampleHeading toggleButton">▾ <span class="text">Example</span></p>
+		
+		
+		
+			<p>Code:</p>
+			<pre class="code">package embed_test
+
+import (
+    &#34;embed&#34;
+    &#34;log&#34;
+    &#34;net/http&#34;
+)
+
+<span class="comment">//go:embed internal/embedtest/testdata/*.txt</span>
+var content embed.FS
+
+func Example() {
+    mux := http.NewServeMux()
+    mux.Handle(&#34;/&#34;, http.FileServer(http.FS(content)))
+    err := http.ListenAndServe(&#34;:8080&#34;, mux)
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+</pre>
+			
+		
+	</div>
+</div>
+
+			</div>
+		</div>
+
+		<div id="pkg-index" class="toggleVisible">
+		<div class="collapsed">
+			<h2 class="toggleButton" title="Click to show Index section">Index ▹</h2>
+		</div>
+		<div class="expanded">
+			<h2 class="toggleButton" title="Click to hide Index section">Index ▾</h2>
+
+		<!-- Table of contents for API; must be named manual-nav to turn off auto nav. -->
+			<div id="manual-nav">
+			<dl>
+			
+			
+			
+			
+				
+				<dd><a href="index.html#FS">type FS</a></dd>
+				
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#FS.Open">func (f FS) Open(name string) (fs.File, error)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#FS.ReadDir">func (f FS) ReadDir(name string) ([]fs.DirEntry, error)</a></dd>
+				
+					
+					<dd>&nbsp; &nbsp; <a href="index.html#FS.ReadFile">func (f FS) ReadFile(name string) ([]byte, error)</a></dd>
+				
+			
+			
+			</dl>
+			</div><!-- #manual-nav -->
+
+		
+		<div id="pkg-examples">
+			<h3>Examples</h3>
+			<div class="js-expandAll expandAll collapsed">(Expand All)</div>
+			<dl>
+			
+			<dd><a class="exampleLink" href="index.html#example_">Package</a></dd>
+			
+			</dl>
+		</div>
+		
+
+		
+			<h3>Package files</h3>
+			<p>
+			<span style="font-size:90%">
+			
+				<a href="http://localhost:8080/src/embed/embed.go">embed.go</a>
+			
+			</span>
+			</p>
+		
+		</div><!-- .expanded -->
+		</div><!-- #pkg-index -->
+
+		
+
+		
+		
+		
+		
+			
+			
+			<h2 id="FS">type <a href="http://localhost:8080/src/embed/embed.go?s=6040:7066#L140">FS</a>
+				<a class="permalink" href="index.html#FS">&#xb6;</a>
+				
+				
+			</h2>
+			<p>
+An FS is a read-only collection of files, usually initialized with a //go:embed directive.
+When declared without a //go:embed directive, an FS is an empty file system.
+</p>
+<p>
+An FS is a read-only value, so it is safe to use from multiple goroutines
+simultaneously and also safe to assign values of type FS to each other.
+</p>
+<p>
+FS implements fs.FS, so it can be used with any package that understands
+file system interfaces, including net/http, text/template, and html/template.
+</p>
+<p>
+See the package documentation for more details about initializing an FS.
+</p>
+
+			<pre>type FS struct {
+    <span class="comment">// contains filtered or unexported fields</span>
+}
+</pre>
+
+			
+
+			
+
+			
+			
+			
+
+			
+
+			
+				
+				<h3 id="FS.Open">func (FS) <a href="http://localhost:8080/src/embed/embed.go?s=10222:10268#L282">Open</a>
+					<a class="permalink" href="index.html#FS.Open">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (f <a href="index.html#FS">FS</a>) Open(name <a href="../builtin/index.html#string">string</a>) (<a href="../io/fs/index.html">fs</a>.<a href="../io/fs/index.html#File">File</a>, <a href="../builtin/index.html#error">error</a>)</pre>
+				<p>
+Open opens the named file for reading and returns it as an [fs.File].
+</p>
+<p>
+The returned file implements [io.Seeker] and [io.ReaderAt] when the file is not a directory.
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="FS.ReadDir">func (FS) <a href="http://localhost:8080/src/embed/embed.go?s=10552:10607#L294">ReadDir</a>
+					<a class="permalink" href="index.html#FS.ReadDir">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (f <a href="index.html#FS">FS</a>) ReadDir(name <a href="../builtin/index.html#string">string</a>) ([]<a href="../io/fs/index.html">fs</a>.<a href="../io/fs/index.html#DirEntry">DirEntry</a>, <a href="../builtin/index.html#error">error</a>)</pre>
+				<p>
+ReadDir reads and returns the entire named directory.
+</p>
+
+				
+				
+				
+			
+				
+				<h3 id="FS.ReadFile">func (FS) <a href="http://localhost:8080/src/embed/embed.go?s=10983:11032#L311">ReadFile</a>
+					<a class="permalink" href="index.html#FS.ReadFile">&#xb6;</a>
+					
+					
+				</h3>
+				<pre>func (f <a href="index.html#FS">FS</a>) ReadFile(name <a href="../builtin/index.html#string">string</a>) ([]<a href="../builtin/index.html#byte">byte</a>, <a href="../builtin/index.html#error">error</a>)</pre>
+				<p>
+ReadFile reads and returns the content of the named file.
+</p>
+
+				
+				
+				
+			
+		
+	
+
+	
+
+
+
+
+
+
+
+<div id="footer">
+Build version go1.18.1.<br>
+Except as <a href="https://developers.google.com/site-policies#restrictions">noted</a>,
+the content of this page is licensed under the
+Creative Commons Attribution 3.0 License,
+and code is licensed under a <a href="http://localhost:8080/LICENSE">BSD license</a>.<br>
+<a href="https://golang.org/doc/tos.html">Terms of Service</a> |
+<a href="https://www.google.com/intl/en/policies/privacy/">Privacy Policy</a>
+</div>
+
+</div><!-- .container -->
+</div><!-- #page -->
+</body>
+</html>

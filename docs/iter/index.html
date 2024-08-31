@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#375EAB">
+
+  <title>iter - Go Documentation Server</title>
+
+<link type="text/css" rel="stylesheet" href="../../lib/godoc/style.css">
+
+<script>window.initFuncs = [];</script>
+<script src="../../lib/godoc/jquery.js" defer></script>
+
+
+
+<script>var goVersion = "go1.18.1";</script>
+<script src="../../lib/godoc/godocs.js" defer></script>
+</head>
+<body>
+
+<div id='lowframe' style="position: fixed; bottom: 0; left: 0; height: 0; width: 100%; border-top: thin solid grey; background-color: white; overflow: auto;">
+...
+</div><!-- #lowframe -->
+
+<div id="topbar" class="wide"><div class="container">
+<div class="top-heading" id="heading-wide"><a href="../index.html">Go Documentation Server</a></div>
+<div class="top-heading" id="heading-narrow"><a href="../index.html">GoDoc</a></div>
+<a href="index.html#" id="menu-button"><span id="menu-button-arrow">&#9661;</span></a>
+<form method="GET" action="http://localhost:8080/search">
+<div id="menu">
+
+<span class="search-box"><input type="search" id="search" name="q" placeholder="Search" aria-label="Search" required><button type="submit"><span><!-- magnifying glass: --><svg width="24" height="24" viewBox="0 0 24 24"><title>submit search</title><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/><path d="M0 0h24v24H0z" fill="none"/></svg></span></button></span>
+</div>
+</form>
+
+</div></div>
+
+
+
+<div id="page" class="wide">
+<div class="container">
+
+
+  <h1>
+    Package iter
+    <span class="text-muted"></span>
+  </h1>
+
+
+
+
+
+
+
+<div id="nav"></div>
+
+
+<!--
+	Copyright 2009 The Go Authors. All rights reserved.
+	Use of this source code is governed by a BSD-style
+	license that can be found in the LICENSE file.
+-->
+<!--
+	Note: Static (i.e., not template-generated) href and id
+	attributes start with "pkg-" to make it impossible for
+	them to conflict with generated attributes (some of which
+	correspond to Go identifiers).
+-->
+
+	<script>
+	document.ANALYSIS_DATA = null;
+	document.CALLGRAPH = null;
+	</script>
+
+	
+		
+		<div id="short-nav">
+			<dl>
+			<dd><code>import "iter"</code></dd>
+			</dl>
+			<dl>
+			<dd><a href="index.html#pkg-overview" class="overviewLink">Overview</a></dd>
+			<dd><a href="index.html#pkg-index" class="indexLink">Index</a></dd>
+			
+			
+			</dl>
+		</div>
+		<!-- The package's Name is printed as title by the top-level template -->
+		<div id="pkg-overview" class="toggleVisible">
+			<div class="collapsed">
+				<h2 class="toggleButton" title="Click to show Overview section">Overview ▹</h2>
+			</div>
+			<div class="expanded">
+				<h2 class="toggleButton" title="Click to hide Overview section">Overview ▾</h2>
+				<p>
+Package iter provides basic definitions and operations related to
+iterators over sequences.
+</p>
+<p>
+# Iterators
+</p>
+<p>
+An iterator is a function that passes successive elements of a
+sequence to a callback function, conventionally named yield.
+The function stops either when the sequence is finished or
+when yield returns false, indicating to stop the iteration early.
+This package defines [Seq] and [Seq2]
+(pronounced like seek—the first syllable of sequence)
+as shorthands for iterators that pass 1 or 2 values per sequence element
+to yield:
+</p>
+<pre>type (
+	Seq[V any]     func(yield func(V) bool)
+	Seq2[K, V any] func(yield func(K, V) bool)
+)
+</pre>
+<p>
+Seq2 represents a sequence of paired values, conventionally key-value
+or index-value pairs.
+</p>
+<p>
+Yield returns true if the iterator should continue with the next
+element in the sequence, false if it should stop.
+</p>
+<p>
+Iterator functions are most often called by a range loop, as in:
+</p>
+<pre>func PrintAll[V any](seq iter.Seq[V]) {
+	for v := range seq {
+		fmt.Println(v)
+	}
+}
+</pre>
+<p>
+# Naming Conventions
+</p>
+<p>
+Iterator functions and methods are named for the sequence being walked:
+</p>
+<pre>// All returns an iterator over all elements in s.
+func (s *Set[V]) All() iter.Seq[V]
+</pre>
+<p>
+The iterator method on a collection type is conventionally named All,
+because it iterates a sequence of all the values in the collection.
+</p>
+<p>
+For a type containing multiple possible sequences, the iterator&#39;s name
+can indicate which sequence is being provided:
+</p>
+<pre>// Cities returns an iterator over the major cities in the country.
+func (c *Country) Cities() iter.Seq[*City]
+
+// Languages returns an iterator over the official spoken languages of the country.
+func (c *Country) Languages() iter.Seq[string]
+</pre>
+<p>
+If an iterator requires additional configuration, the constructor function
+can take additional configuration arguments:
+</p>
+<pre>// Scan returns an iterator over key-value pairs with min ≤ key ≤ max.
+func (m *Map[K, V]) Scan(min, max K) iter.Seq2[K, V]
+
+// Split returns an iterator over the (possibly-empty) substrings of s
+// separated by sep.
+func Split(s, sep string) iter.Seq[string]
+</pre>
+<p>
+When there are multiple possible iteration orders, the method name may
+indicate that order:
+</p>
+<pre>// All returns an iterator over the list from head to tail.
+func (l *List[V]) All() iter.Seq[V]
+
+// Backward returns an iterator over the list from tail to head.
+func (l *List[V]) Backward() iter.Seq[V]
+
+// Preorder returns an iterator over all nodes of the syntax tree
+// beneath (and including) the specified root, in depth-first preorder,
+// visiting a parent node before its children.
+func Preorder(root Node) iter.Seq[Node]
+</pre>
+<p>
+# Single-Use Iterators
+</p>
+<p>
+Most iterators provide the ability to walk an entire sequence:
+when called, the iterator does any setup necessary to start the
+sequence, then calls yield on successive elements of the sequence,
+and then cleans up before returning. Calling the iterator again
+walks the sequence again.
+</p>
+<p>
+Some iterators break that convention, providing the ability to walk a
+sequence only once. These &ldquo;single-use iterators&rdquo; typically report values
+from a data stream that cannot be rewound to start over.
+Calling the iterator again after stopping early may continue the
+stream, but calling it again after the sequence is finished will yield
+no values at all. Doc comments for functions or methods that return
+single-use iterators should document this fact:
+</p>
+<pre>// Lines returns an iterator over lines read from r.
+// It returns a single-use iterator.
+func (r *Reader) Lines() iter.Seq[string]
+</pre>
+<p>
+# Pulling Values
+</p>
+<p>
+Functions and methods that accept or return iterators
+should use the standard [Seq] or [Seq2] types, to ensure
+compatibility with range loops and other iterator adapters.
+The standard iterators can be thought of as &ldquo;push iterators&rdquo;, which
+push values to the yield function.
+</p>
+<p>
+Sometimes a range loop is not the most natural way to consume values
+of the sequence. In this case, [Pull] converts a standard push iterator
+to a &ldquo;pull iterator&rdquo;, which can be called to pull one value at a time
+from the sequence. [Pull] starts an iterator and returns a pair
+of functions—next and stop—which return the next value from the iterator
+and stop it, respectively.
+</p>
+<p>
+For example:
+</p>
+<pre>// Pairs returns an iterator over successive pairs of values from seq.
+func Pairs[V any](seq iter.Seq[V]) iter.Seq2[V, V] {
+	return func(yield func(V, V) bool) {
+		next, stop := iter.Pull(seq)
+		defer stop()
+		for {
+			v1, ok1 := next()
+			if !ok1 {
+				return
+			}
+			v2, ok2 := next()
+			// If ok2 is false, v2 should be the
+			// zero value; yield one last pair.
+			if !yield(v1, v2) {
+				return
+			}
+			if !ok2 {
+				return
+			}
+		}
+	}
+}
+</pre>
+<p>
+If clients do not consume the sequence to completion, they must call stop,
+which allows the iterator function to finish and return. As shown in
+the example, the conventional way to ensure this is to use defer.
+</p>
+<p>
+# Standard Library Usage
+</p>
+<p>
+A few packages in the standard library provide iterator-based APIs,
+most notably the [maps] and [slices] packages.
+For example, [maps.Keys] returns an iterator over the keys of a map,
+while [slices.Sorted] collects the values of an iterator into a slice,
+sorts them, and returns the slice, so to iterate over the sorted keys of a map:
+</p>
+<pre>for _, key := range slices.Sorted(maps.Keys(m)) {
+	...
+}
+</pre>
+<p>
+# Mutation
+</p>
+<p>
+Iterators provide only the values of the sequence, not any direct way
+to modify it. If an iterator wishes to provide a mechanism for modifying
+a sequence during iteration, the usual approach is to define a position type
+with the extra operations and then provide an iterator over positions.
+</p>
+<p>
+For example, a tree implementation might provide:
+</p>
+<pre>// Positions returns an iterator over positions in the sequence.
+func (t *Tree[V]) Positions() iter.Seq[*Pos]
+
+// A Pos represents a position in the sequence.
+// It is only valid during the yield call it is passed to.
+type Pos[V any] struct { ... }
+
+// Pos returns the value at the cursor.
+func (p *Pos[V]) Value() V
+
+// Delete deletes the value at this point in the iteration.
+func (p *Pos[V]) Delete()
+
+// Set changes the value v at the cursor.
+func (p *Pos[V]) Set(v V)
+</pre>
+<p>
+And then a client could delete boring values from the tree using:
+</p>
+<pre>for p := range t.Positions() {
+	if boring(p.Value()) {
+		p.Delete()
+	}
+}
+</pre>
+
+				
+			</div>
+		</div>
+
+		<div id="pkg-index" class="toggleVisible">
+		<div class="collapsed">
+			<h2 class="toggleButton" title="Click to show Index section">Index ▹</h2>
+		</div>
+		<div class="expanded">
+			<h2 class="toggleButton" title="Click to hide Index section">Index ▾</h2>
+
+		<!-- Table of contents for API; must be named manual-nav to turn off auto nav. -->
+			<div id="manual-nav">
+			<dl>
+			
+			
+			
+				
+				<dd><a href="index.html#Pull">func Pull[V any](seq Seq[V]) (next func() (V, bool), stop func())</a></dd>
+			
+				
+				<dd><a href="index.html#Pull2">func Pull2[K, V any](seq Seq2[K, V]) (next func() (K, V, bool), stop func())</a></dd>
+			
+			
+				
+				<dd><a href="index.html#Seq">type Seq</a></dd>
+				
+				
+			
+				
+				<dd><a href="index.html#Seq2">type Seq2</a></dd>
+				
+				
+			
+			
+			</dl>
+			</div><!-- #manual-nav -->
+
+		
+
+		
+			<h3>Package files</h3>
+			<p>
+			<span style="font-size:90%">
+			
+				<a href="http://localhost:8080/src/iter/iter.go">iter.go</a>
+			
+			</span>
+			</p>
+		
+		</div><!-- .expanded -->
+		</div><!-- #pkg-index -->
+
+		
+
+		
+		
+		
+			
+			
+			<h2 id="Pull">func <a href="http://localhost:8080/src/iter/iter.go?s=8298:8363#L231">Pull</a>
+				<a class="permalink" href="index.html#Pull">&#xb6;</a>
+				
+				
+			</h2>
+			<pre>func Pull[V <a href="../builtin/index.html#any">any</a>](seq <a href="index.html#Seq">Seq</a>[<a href="index.html#V">V</a>]) (next func() (<a href="index.html#V">V</a>, <a href="../builtin/index.html#bool">bool</a>), stop func())</pre>
+			<p>
+Pull converts the &ldquo;push-style&rdquo; iterator sequence seq
+into a &ldquo;pull-style&rdquo; iterator accessed by the two functions
+next and stop.
+</p>
+<p>
+Next returns the next value in the sequence
+and a boolean indicating whether the value is valid.
+When the sequence is over, next returns the zero V and false.
+It is valid to call next after reaching the end of the sequence
+or after calling stop. These calls will continue
+to return the zero V and false.
+</p>
+<p>
+Stop ends the iteration. It must be called when the caller is
+no longer interested in next values and next has not yet
+signaled that the sequence is over (with a false boolean return).
+It is valid to call stop multiple times and when next has
+already returned false. Typically, callers should &ldquo;defer stop()&rdquo;.
+</p>
+<p>
+It is an error to call next or stop from multiple goroutines
+simultaneously.
+</p>
+<p>
+If the iterator panics during a call to next (or stop),
+then next (or stop) itself panics with the same value.
+</p>
+
+			
+			
+
+		
+			
+			
+			<h2 id="Pull2">func <a href="http://localhost:8080/src/iter/iter.go?s=11289:11365#L346">Pull2</a>
+				<a class="permalink" href="index.html#Pull2">&#xb6;</a>
+				
+				
+			</h2>
+			<pre>func Pull2[K, V <a href="../builtin/index.html#any">any</a>](seq <a href="index.html#Seq2">Seq2</a>[<a href="index.html#K">K</a>, <a href="index.html#V">V</a>]) (next func() (<a href="index.html#K">K</a>, <a href="index.html#V">V</a>, <a href="../builtin/index.html#bool">bool</a>), stop func())</pre>
+			<p>
+Pull2 converts the &ldquo;push-style&rdquo; iterator sequence seq
+into a &ldquo;pull-style&rdquo; iterator accessed by the two functions
+next and stop.
+</p>
+<p>
+Next returns the next pair in the sequence
+and a boolean indicating whether the pair is valid.
+When the sequence is over, next returns a pair of zero values and false.
+It is valid to call next after reaching the end of the sequence
+or after calling stop. These calls will continue
+to return a pair of zero values and false.
+</p>
+<p>
+Stop ends the iteration. It must be called when the caller is
+no longer interested in next values and next has not yet
+signaled that the sequence is over (with a false boolean return).
+It is valid to call stop multiple times and when next has
+already returned false. Typically, callers should &ldquo;defer stop()&rdquo;.
+</p>
+<p>
+It is an error to call next or stop from multiple goroutines
+simultaneously.
+</p>
+<p>
+If the iterator panics during a call to next (or stop),
+then next (or stop) itself panics with the same value.
+</p>
+
+			
+			
+
+		
+		
+			
+			
+			<h2 id="Seq">type <a href="http://localhost:8080/src/iter/iter.go?s=6763:6803#L193">Seq</a>
+				<a class="permalink" href="index.html#Seq">&#xb6;</a>
+				
+				
+			</h2>
+			<p>
+Seq is an iterator over sequences of individual values.
+When called as seq(yield), seq calls yield(v) for each value v in the sequence,
+stopping early if yield returns false.
+See the [iter] package documentation for more details.
+</p>
+
+			<pre>type Seq[V <a href="../builtin/index.html#any">any</a>] func(yield func(<a href="index.html#V">V</a>) <a href="../builtin/index.html#bool">bool</a>)</pre>
+
+			
+
+			
+
+			
+			
+			
+
+			
+
+			
+		
+			
+			
+			<h2 id="Seq2">type <a href="http://localhost:8080/src/iter/iter.go?s=7084:7131#L199">Seq2</a>
+				<a class="permalink" href="index.html#Seq2">&#xb6;</a>
+				
+				
+			</h2>
+			<p>
+Seq2 is an iterator over sequences of pairs of values, most commonly key-value pairs.
+When called as seq(yield), seq calls yield(k, v) for each pair (k, v) in the sequence,
+stopping early if yield returns false.
+See the [iter] package documentation for more details.
+</p>
+
+			<pre>type Seq2[K, V <a href="../builtin/index.html#any">any</a>] func(yield func(<a href="index.html#K">K</a>, <a href="index.html#V">V</a>) <a href="../builtin/index.html#bool">bool</a>)</pre>
+
+			
+
+			
+
+			
+			
+			
+
+			
+
+			
+		
+	
+
+	
+
+
+
+
+
+
+
+<div id="footer">
+Build version go1.18.1.<br>
+Except as <a href="https://developers.google.com/site-policies#restrictions">noted</a>,
+the content of this page is licensed under the
+Creative Commons Attribution 3.0 License,
+and code is licensed under a <a href="http://localhost:8080/LICENSE">BSD license</a>.<br>
+<a href="https://golang.org/doc/tos.html">Terms of Service</a> |
+<a href="https://www.google.com/intl/en/policies/privacy/">Privacy Policy</a>
+</div>
+
+</div><!-- .container -->
+</div><!-- #page -->
+</body>
+</html>

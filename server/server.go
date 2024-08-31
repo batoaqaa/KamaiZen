@@ -1,15 +1,23 @@
 package server
 
 import (
-	"KamaiZen/analysis"
 	"KamaiZen/logger"
 	"KamaiZen/rpc"
+	"KamaiZen/state_manager"
 	"bufio"
 	"os"
 	"sync"
 )
 
-func StartServer(wg *sync.WaitGroup, state analysis.State, analyser_channel chan analysis.State) {
+// StartServer starts the language server and listens for incoming messages from the client.
+// It initializes the event manager, registers handlers for various methods, and processes incoming messages.
+//
+// Parameters:
+//
+//	wg *sync.WaitGroup - The wait group to signal when the server is done.
+//	analyser_channel chan state_manager.State - The channel for communicating with the state manager.
+func StartServer(wg *sync.WaitGroup, analyser_channel chan state_manager.State) {
+	// TODO: Get rid of analyser_channel
 	defer wg.Done()
 	scanner := bufio.NewScanner(os.Stdin)
 	logger.Info("Starting server")
@@ -33,6 +41,6 @@ func StartServer(wg *sync.WaitGroup, state analysis.State, analyser_channel chan
 			logger.Error("Error decoding message: ", error)
 			continue
 		}
-		handleMessage(state, method, contents, analyser_channel, eventManager)
+		handleMessage(method, contents, analyser_channel, eventManager)
 	}
 }

@@ -7,7 +7,7 @@ import (
 )
 
 type ASTVisitor interface {
-	Visit(node *ASTNode) error
+	Visit(node *ASTNode, a *Analyzer) error
 }
 
 type FormattingVisitor struct {
