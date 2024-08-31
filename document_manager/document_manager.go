@@ -167,7 +167,7 @@ func extractFunctionDoc(lines []string) []FunctionDocumentation {
 //
 // return: An error if there was an issue reading the directory or file.
 func Initialise(s settings.LSPSettings) error {
-	path := s.KamailioSourcePath() + _MODULES_PATH
+	path := s.KamailioSourcePath + _MODULES_PATH
 	listOfModules, err := os.ReadDir(path)
 	if err != nil {
 		return err

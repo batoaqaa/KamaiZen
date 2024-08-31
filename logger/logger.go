@@ -1,8 +1,10 @@
 package logger
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"runtime"
 )
 
 // Log levels
@@ -30,7 +32,7 @@ func getLogger() *log.Logger {
 		if err != nil {
 			panic(err)
 		}
-		logger = log.New(file, "[KamaiZen] ", log.Ldate|log.Ltime|log.Lshortfile)
+		logger = log.New(file, "[KamaiZen] ", log.Ldate|log.Ltime)
 	}
 	return logger
 }
@@ -40,67 +42,76 @@ func SetLogLevel(level LOGLEVEL) {
 	logLevel = level
 }
 
+func writeLog(level string, v ...interface{}) {
+	_, file, line, ok := runtime.Caller(2)
+	if !ok {
+		file = "???"
+		line = -1
+	}
+	getLogger().Println(append([]interface{}{fmt.Sprintf("%s:%d [%s]", file, line, level)}, v...)...)
+}
+
 // Info logs an info message if the current log level is INFO or lower.
 func Info(v ...interface{}) {
 	if logLevel <= INFO {
-		getLogger().Println(append([]interface{}{"[INFO]"}, v...)...)
+		writeLog("INFO", v...)
 	}
 }
 
 // Infof logs a formatted info message if the current log level is INFO or lower.
 func Infof(format string, v ...interface{}) {
 	if logLevel <= INFO {
-		getLogger().Printf("[INFO] "+format, v...)
+		writeLog("INFO", fmt.Sprintf(format, v...))
 	}
 }
 
 // Debug logs a debug message if the current log level is DEBUG.
 func Debug(v ...interface{}) {
 	if logLevel <= DEBUG {
-		getLogger().Println(append([]interface{}{"[DEBUG]"}, v...)...)
+		writeLog("DEBUG", v...)
 	}
 }
 
 // Debugf logs a formatted debug message if the current log level is DEBUG.
 func Debugf(format string, v ...interface{}) {
 	if logLevel <= DEBUG {
-		getLogger().Printf("[DEBUG] "+format, v...)
+		writeLog("DEBUG", fmt.Sprintf(format, v...))
 	}
 }
 
 func Warn(v ...interface{}) {
 	if logLevel <= WARN {
-		getLogger().Println(append([]interface{}{"[WARN]"}, v...)...)
+		writeLog("WARN", v...)
 	}
 }
 
 // Warnf logs a formatted warning message if the current log level is WARN or lower.
 func Warnf(format string, v ...interface{}) {
 	if logLevel <= WARN {
-		getLogger().Printf("[WARN] "+format, v...)
+		writeLog("WARN", fmt.Sprintf(format, v...))
 	}
 }
 
 // Error logs an error message if the current log level is ERROR or lower.
 func Error(v ...interface{}) {
 	if logLevel <= ERROR {
-		getLogger().Println(append([]interface{}{"[ERROR]"}, v...)...)
+		writeLog("ERROR", v...)
 	}
 }
 
 // Errorf logs a formatted error message if the current log level is ERROR or lower.
 func Errorf(format string, v ...interface{}) {
 	if logLevel <= ERROR {
-		getLogger().Printf("[ERROR] "+format, v...)
+		writeLog("ERROR", fmt.Sprintf(format, v...))
 	}
 }
 
 // Fatal logs a fatal message and exits the program.
 func Fatal(v ...interface{}) {
-	getLogger().Println(append([]interface{}{"[FATAL]"}, v...)...)
+	writeLog("FATAL", v...)
 }
 
 // Fatalf logs a formatted fatal message and exits the program.
 func Fatalf(format string, v ...interface{}) {
-	getLogger().Fatalf("[FATAL] "+format, v...)
+	writeLog("FATAL", fmt.Sprintf(format, v...))
 }

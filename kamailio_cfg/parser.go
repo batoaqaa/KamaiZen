@@ -1,6 +1,7 @@
 package kamailio_cfg
 
 import (
+	"KamaiZen/logger"
 	"context"
 
 	sitter "github.com/smacker/go-tree-sitter"
@@ -20,39 +21,79 @@ import (
 
 // Implement Memento for parser to undo changes in case of error.
 
+// Parser is a struct that encapsulates the tree-sitter parser and its associated state.
+// It holds references to the current and previous parse trees, as well as the language
+// used for parsing.
 type Parser struct {
 	parser   *sitter.Parser
 	language *sitter.Language
 	tree     *sitter.Tree
+	oldTree  *sitter.Tree
 }
 
+// NewParser creates and returns a new instance of Parser.
+// It initializes the tree-sitter parser and sets the language for parsing.
+//
+// Returns:
+//
+//	*Parser - A new instance of Parser.
 func NewParser() *Parser {
-	return &Parser{
-		parser: sitter.NewParser(),
+	logger.Debug("Creating new parser")
+	p := Parser{
+		parser:   sitter.NewParser(),
+		tree:     nil,
+		oldTree:  nil,
+		language: sitter.NewLanguage(Language()),
 	}
-}
-
-func (p *Parser) SetLanguage() {
-	p.language = sitter.NewLanguage(Language())
 	p.parser.SetLanguage(p.language)
+	return &p
 }
 
+// GetLanguage returns the language used by the parser.
+//
+// Returns:
+//
+//	*sitter.Language - The language used by the parser.
 func (p *Parser) GetLanguage() *sitter.Language {
 	return p.language
 }
 
+// Parse parses the given source code and constructs the Abstract Syntax Tree (AST).
+// It updates the current and previous parse trees accordingly.
+//
+// Parameters:
+//
+//	sourceCode []byte - The source code to be parsed into an AST.
+//
+// Returns:
+//
+//	*sitter.Node - The root node of the constructed AST, or nil if parsing fails.
 func (p *Parser) Parse(sourceCode []byte) *sitter.Node {
-	tree, _ := p.parser.ParseCtx(context.Background(), nil, sourceCode)
-	p.tree = tree
+	if p.language == nil {
+		logger.Fatal("Parser not initialized", p.language)
+		return nil
+	}
+	tree, err := p.parser.ParseCtx(context.Background(), p.oldTree, sourceCode)
+	if err != nil {
+		logger.Error("Error parsing the source code: ", err)
+		p.oldTree = nil
+		return nil
+	}
+	if p.tree == nil {
+		p.tree = tree
+	} else {
+		p.oldTree = p.tree
+		p.tree = tree
+	}
 	n := p.tree.RootNode()
 	return n
 }
 
+// GetTree returns the current parse tree.
+//
+// Returns:
+//
+//	*sitter.Tree - The current parse tree.
 func (p *Parser) GetTree() *sitter.Tree {
 	return p.tree
-}
-
-func (p *Parser) UpdateTree(content []byte) {
-	newTree, _ := p.parser.ParseCtx(context.Background(), p.tree, content)
-	p.tree = newTree
 }
