@@ -1,0 +1,5 @@
+{
+    "kamailioSourcePath": "/path/to/kamailio/source",
+    "rootDir": "/path/to/root/directory",
+    "logLevel": "DEBUG"
+}

@@ -5,12 +5,11 @@ A language server for kamailio configuration files
 ## Features
 - [ ] Code completion
     - [ ] Variables
-    - [ ] Functions
+    - [x] Functions
     - [ ] Modules
     - [ ] Keywords
-    - [ ] Macros
     - [ ] Parameters
-    - [ ] Headers
+    - [x] Headers
 - [ ] Code navigation
   - [ ] Go to definition - In progress
   - [ ] Find references - In progress
@@ -18,6 +17,7 @@ A language server for kamailio configuration files
 - [ ] Code folding
 - [ ] Diagnostics
     - [x] Syntax Errors
+    - [x] Invalid statements
     - [x] Unreachable code
     - [ ] Unused variables
     - [ ] Unused functions
@@ -27,4 +27,16 @@ A language server for kamailio configuration files
     - [x] Show documentation
     - [ ] Show type
 - [ ] Highlight
+
+## Integration
+
+### Neovim
+
+- [ ] [nvim-lspconfig](github.com/IbrahimShahzad/KamaiZen.nvim)
+
+### Vscode
+
+- [ ] [vscode-kamaizen](github.com/IbrahimShahzad/vscode-kamaizen)
+
+> Not yet available
 
