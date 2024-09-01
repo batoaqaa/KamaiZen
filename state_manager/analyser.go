@@ -157,9 +157,9 @@ func GetCompletionItems(uri lsp.DocumentURI) []lsp.CompletionItem {
 	keywords := getAllAvailableKeywords()
 	for header, description := range keywords {
 		completionItems = append(completionItems, lsp.CompletionItem{
-			Detail:        header,
-			Label:         description,
-			Documentation: "SIP Header",
+			Detail:        "SIP Header",
+			Label:         header,
+			Documentation: description,
 			Kind:          lsp.VARIABLE_COMPLETION,
 		})
 	}

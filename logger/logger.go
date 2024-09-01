@@ -16,12 +16,10 @@ const (
 	FATAL
 )
 
-type LOGLEVEL int
-
 // global logger
 var (
 	logger   *log.Logger
-	logLevel LOGLEVEL
+	logLevel int
 )
 
 // getLogger initializes the logger if it is not already initialized and returns it.
@@ -38,7 +36,7 @@ func getLogger() *log.Logger {
 }
 
 // SetLogLevel sets the current log level.
-func SetLogLevel(level LOGLEVEL) {
+func SetLogLevel(level int) {
 	logLevel = level
 }
 

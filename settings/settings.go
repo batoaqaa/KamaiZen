@@ -1,15 +1,8 @@
 package settings
 
-import (
-	"KamaiZen/logger"
-	"encoding/json"
-	"os"
-)
-
 type LSPSettings struct {
-	KamailioSourcePath string          `json:"kamailioSourcePath"`
-	RootDir            string          `json:"rootDir"`
-	LogLevel           logger.LOGLEVEL `json:"logLevel"`
+	KamailioSourcePath string `json:"kamailioSourcePath"`
+	LogLevel           int    `json:"logLevel"`
 }
 
 // NewLSPSettings creates and returns a new instance of LSPSettings.
@@ -24,37 +17,11 @@ type LSPSettings struct {
 // Returns:
 //
 //	LSPSettings - The initialized settings.
-func NewLSPSettings(kamailioSourcePath string, rootDir string, log_level logger.LOGLEVEL) LSPSettings {
+func NewLSPSettings(kamailioSourcePath string, rootDir string, log_level int) LSPSettings {
 	return LSPSettings{
 		KamailioSourcePath: kamailioSourcePath,
-		RootDir:            rootDir,
 		LogLevel:           log_level,
 	}
-}
-
-type JSONSettingsReader struct{}
-
-// ReadSettings reads the settings from a JSON file at the given filepath.
-// It unmarshals the JSON data into an LSPSettings struct and returns it.
-//
-// Parameters:
-//
-//	filepath string - The path to the JSON file containing the settings.
-//
-// Returns:
-//
-//	LSPSettings - The settings read from the JSON file.
-func (jsr *JSONSettingsReader) ReadSettings(filepath string) LSPSettings {
-	data, err := os.ReadFile(filepath)
-	if err != nil {
-		logger.Errorf("Error reading file: %s", err)
-	}
-	var settings LSPSettings
-	err = json.Unmarshal(data, &settings)
-	if err != nil {
-		logger.Errorf("Error unmarshalling settings: %s", err)
-	}
-	return settings
 }
 
 const RPC_VERSION = "2.0"
