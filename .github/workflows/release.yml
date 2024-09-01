@@ -26,7 +26,7 @@ jobs:
 
       - name: Build KamaiZen
         run: |
-          GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -o kamaizen${{ matrix.goos == 'windows' && '.exe' || '' }}
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.arch }} go build -o kamaizen${{ matrix.goos == 'windows' && '.exe' || '' }}
 
       - name: Archive
         run: |
