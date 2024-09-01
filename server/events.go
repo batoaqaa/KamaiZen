@@ -63,7 +63,7 @@ func handleInitialized(contents []byte, analyser_channel chan state_manager.Stat
 		logger.Error("Error unmarshalling initialized notfication: ", error)
 		return
 	}
-	logger.Infof("Received initialize request with %v", notification)
+	logger.Infof("Received initialized notification with %v", notification)
 }
 
 // handleInitialize handles the 'initialize' request.
@@ -77,9 +77,27 @@ func handleInitialize(contents []byte, analyser_channel chan state_manager.State
 		return
 	}
 	logger.Infof("Connected to %s with version %s", request.Params.ClientInfo.Name, request.Params.ClientInfo.Version)
+	logger.Debug("Sending workspace configuration request")
+	config_request := lsp.NewWorkspaceConfigurationRequest(2, lsp.ConfigurationParams{
+		Items: []lsp.ConfigurationItem{
+			{
+				Section: "kamailio",
+			},
+		},
+	})
+	lsp.WriteResponse(config_request)
 	response := lsp.NewInitializeResponse(request.ID)
 	lsp.WriteResponse(response)
 	logger.Debug("Sent initialize response")
+}
+
+func handleWorkspaceConfiguration(contents []byte, analyser_channel chan state_manager.State) {
+	var response lsp.WorkspaceConfigurationResponse
+	if error := json.Unmarshal(contents, &response); error != nil {
+		logger.Error("Error unmarshalling workspace configuration response: ", error)
+		return
+	}
+	logger.Infof("Received workspace configuration response: %v", response)
 }
 
 // handleDidOpen handles the 'didOpen' notification.
