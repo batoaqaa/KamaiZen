@@ -13,7 +13,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         goos: [linux, darwin, windows]
-        arch: [x64]
+        arch: [amd64]
 
     steps:
       - name: Checkout
@@ -26,7 +26,7 @@ jobs:
 
       - name: Build KamaiZen
         run: |
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.arch }} go build -o kamaizen${{ matrix.goos == 'windows' && '.exe' || '' }}
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.arch }} go build -o KamaiZen${{ matrix.goos == 'windows' && '.exe' || '' }}
 
       - name: Archive
         run: |
@@ -35,5 +35,5 @@ jobs:
       - name: Upload Release Asset
         uses: actions/upload-artifact@v2
         with:
-          name: kamaizen-${{ matrix.os }}-${{ matrix.arch }}.tar.gz
-          path: kamaizen-${{ matrix.os }}-${{ matrix.arch }}.tar.gz
+          name: KamaiZen-${{ matrix.os }}-${{ matrix.arch }}.tar.gz
+          path: KamaiZen-${{ matrix.os }}-${{ matrix.arch }}.tar.gz
