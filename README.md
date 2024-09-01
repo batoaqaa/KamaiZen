@@ -1,6 +1,8 @@
 # KamaiZen
 A language server for kamailio configuration files
 
+For syntax highlighting, use [tree-sitter-kamailio-cfg](https://github.com/IbrahimShahzad/tree-sitter-kamailio-cfg)
+
 
 ## Features
 - [ ] Code completion
@@ -32,11 +34,12 @@ A language server for kamailio configuration files
 
 ### Neovim
 
-- [ ] [nvim-lspconfig](github.com/IbrahimShahzad/KamaiZen.nvim)
+- [x] [kamaizen.nvim](https://github.com/IbrahimShahzad/kamaizen.nvim)
 
 ### Vscode
 
+> Not yet available
+
 - [ ] [vscode-kamaizen](github.com/IbrahimShahzad/vscode-kamaizen)
 
-> Not yet available
 
