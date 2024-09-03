@@ -18,6 +18,7 @@ const (
 	BlockEndNodeType                = "block_end"
 	UnaryExpressionNodeType         = "unary_expression"
 	BinaryExpressionNodeType        = "binary_expression"
+	CaseStatementNodeType           = "case_statement"
 )
 
 // UpdateTree updates the given parse tree by applying an edit operation.

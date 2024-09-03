@@ -173,7 +173,7 @@ func (d *DiagnosticVisitor) addUnreachableCodeWarnings(node *ASTNode, a *Analyze
 					continue
 				}
 				start_node := s.NextNamedSibling()
-				if start_node.Type() == BlockEndNodeType {
+				if start_node.Type() == BlockEndNodeType || start_node.NamedChild(0).Type() == CaseStatementNodeType {
 					// not unreachable
 					continue
 				}
