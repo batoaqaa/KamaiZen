@@ -6,6 +6,7 @@ import (
 
 const (
 	_ERROR_QUERY              = "(ERROR) @error"
+	_XML_QUERY                = "(xml) @xml"
 	_DEPRECATED_COMMENT_QUERY = "(deprecated_comment) @deprecated"
 	_CORE_FUNCTION_QUERY      = "(core_function) @statement"
 	_FUNCTION_QUERY           = "(function: (expression)) @function"

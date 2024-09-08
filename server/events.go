@@ -107,7 +107,7 @@ func handleWorkspaceConfiguration(contents []byte) {
 	initialize_response = lsp.NewInitializeResponse(response.ID)
 	lsp.WriteResponse(initialize_response)
 	logger.Debug("Sent initialize response")
-	GetServerInstance().addKamailioMethods(settings.NewLSPSettings(response.Result[0].KamailioSourcePath, "", response.Result[0].Loglevel))
+	GetServerInstance().addKamailioMethods(settings.NewLSPSettings(response.Result[0].KamailioSourcePath, "", response.Result[0].Loglevel, response.Result[0].EnableDeprecatedCommentHint))
 }
 
 // handleDidOpen handles the 'didOpen' notification.

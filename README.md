@@ -54,6 +54,7 @@ local client = vim.lsp.start_client {
     kamaizen = {
       logLevel = 1,
       kamailioSourcePath = '/path/to/kamailio-source', -- Path to kamailio source
+      enableDeprecatedCommentHint = false, -- to enable hints for '#' comments
     },
   },
 }

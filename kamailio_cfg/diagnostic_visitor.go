@@ -3,6 +3,7 @@ package kamailio_cfg
 import (
 	"KamaiZen/logger"
 	"KamaiZen/lsp"
+	"KamaiZen/settings"
 
 	sitter "github.com/smacker/go-tree-sitter"
 )
@@ -84,6 +85,27 @@ func (d *DiagnosticVisitor) Visit(node *ASTNode, a *Analyzer) error {
 	return nil
 }
 
+func getXMLPaths(node *ASTNode, a *Analyzer) []sitter.Node {
+	var xml_nodes []sitter.Node
+	// TODO: fix grammar. right now skipping the xml errors
+	qe, err := NewQueryExecutor(_XML_QUERY, node.Node, a.GetParser().language)
+	if err != nil {
+		logger.Error("Error creating query: ", err)
+		return nil
+	}
+	for {
+		match, ok := qe.NextMatch()
+		if !ok {
+			break
+		}
+		for _, capture := range match.Captures {
+			node := capture.Node
+			xml_nodes = append(xml_nodes, *node)
+		}
+	}
+	return xml_nodes
+}
+
 // addSyntaxErrors identifies and collects syntax errors in the given AST node.
 // It uses a query executor to find syntax errors and creates diagnostics for each error found.
 //
@@ -98,6 +120,7 @@ func (d *DiagnosticVisitor) addSyntaxErrors(node *ASTNode, a *Analyzer) {
 		logger.Error("Error creating query: ", err)
 		return
 	}
+	xml_nodes := getXMLPaths(node, a)
 	for {
 		match, ok := qe.NextMatch()
 		if !ok {
@@ -105,6 +128,15 @@ func (d *DiagnosticVisitor) addSyntaxErrors(node *ASTNode, a *Analyzer) {
 		}
 		for _, capture := range match.Captures {
 			node := capture.Node
+			skip := false
+			for _, xml := range xml_nodes {
+				if node.StartByte() >= xml.StartByte() && node.EndByte() <= xml.EndByte() {
+					skip = true
+				}
+			}
+			if skip {
+				continue
+			}
 			diagnostics = append(diagnostics,
 				createDiagnostic("Syntax error", node.StartPoint(), node.EndPoint(), lsp.ERROR))
 		}
@@ -267,9 +299,11 @@ func (d *DiagnosticVisitor) addInvalidExpressionErrors(node *ASTNode, a *Analyze
 //	a *Analyzer - The analyzer used to get the parser and language information.
 func (d *DiagnosticVisitor) GetQueryDiagnostics(node *ASTNode, a *Analyzer) {
 	d.addInvalidExpressionErrors(node, a)
-	d.addDeprecatedCommentHints(node, a)
 	d.addUnreachableCodeWarnings(node, a)
 	d.addSyntaxErrors(node, a)
+	if settings.GlobalSettings.DeprecatedCommentHints {
+		d.addDeprecatedCommentHints(node, a)
+	}
 }
 
 // GetDiagnostics returns the collected diagnostics.

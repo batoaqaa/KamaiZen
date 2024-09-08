@@ -14,8 +14,9 @@ type ConfigurationResponse struct {
 }
 
 type ConfigurationObject struct {
-	KamailioSourcePath string `json:"kamailioSourcePath"`
-	Loglevel           int    `json:"logLevel"`
+	KamailioSourcePath          string `json:"kamailioSourcePath"`
+	Loglevel                    int    `json:"logLevel"`
+	EnableDeprecatedCommentHint bool   `json:"enableDeprecatedCommentHint"`
 }
 
 type ConfigurationItemValue struct {
