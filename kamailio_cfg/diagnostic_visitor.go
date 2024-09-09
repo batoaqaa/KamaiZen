@@ -197,7 +197,7 @@ func (d *DiagnosticVisitor) addUnreachableCodeWarnings(node *ASTNode, a *Analyze
 			node := capture.Node
 			// go back to statement parent
 			s := node.Parent().Parent()
-			if s.Type() == SatementNodeType && s.NextNamedSibling() != nil {
+			if s.Type() == StatementNodeType && s.NextNamedSibling() != nil && s.NextNamedSibling().Type() == StatementNodeType {
 				// the next named siblings (statements) are unreachable
 				sibling_count := s.Parent().NamedChildCount()
 				if sibling_count == 0 {
@@ -247,7 +247,7 @@ func (d *DiagnosticVisitor) addInvalidExpressionErrors(node *ASTNode, a *Analyze
 		for _, capture := range match.Captures {
 			node := capture.Node
 			// check if the statement has an expression
-			if node.Parent().Type() != SatementNodeType {
+			if node.Parent().Type() != StatementNodeType {
 				continue
 			}
 
@@ -300,7 +300,7 @@ func (d *DiagnosticVisitor) addInvalidExpressionErrors(node *ASTNode, a *Analyze
 func (d *DiagnosticVisitor) GetQueryDiagnostics(node *ASTNode, a *Analyzer) {
 	d.addInvalidExpressionErrors(node, a)
 	d.addUnreachableCodeWarnings(node, a)
-	d.addSyntaxErrors(node, a)
+	// d.addSyntaxErrors(node, a) TODO: enable after the false errors are fixed
 	if settings.GlobalSettings.DeprecatedCommentHints {
 		d.addDeprecatedCommentHints(node, a)
 	}

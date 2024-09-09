@@ -7,7 +7,7 @@ import (
 const (
 	ReturnNodeType                  = "return_statement"
 	CoreFunctionNodeType            = "core_function_statement"
-	SatementNodeType                = "statement"
+	StatementNodeType               = "statement"
 	ParenthesizedExpressionNodeType = "parenthesized_expression"
 	AssignmentExpressionNodeType    = "assignment_expression"
 	TopLevelAssignmentNodeType      = "top_level_assignment_expression"
