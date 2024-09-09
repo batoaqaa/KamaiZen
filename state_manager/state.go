@@ -158,6 +158,7 @@ func (s *State) UpdateDocument(uri lsp.DocumentURI, text string) []lsp.Diagnosti
 //
 //	lsp.HoverResponse - The hover response.
 func (s *State) Hover(id int, uri lsp.DocumentURI, position lsp.Position) lsp.HoverResponse {
+	logger.Debug("Within Hover ")
 	text := s.Documents[uri]
 	functionName := GetFunctionNameAtPosition(uri, position, []byte(text))
 	logger.Debug("Function name at position: ", functionName)

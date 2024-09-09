@@ -72,7 +72,7 @@ func (s *StateTree) TraverseNode(uri lsp.DocumentURI, node *sitter.Node, logger 
 //
 //	string - The name of the function at the given position.
 func GetFunctionNameAtPosition(uri lsp.DocumentURI, position lsp.Position, source_code []byte) string {
-	node := stateTreeCache.nodes[uri]
+	node := GetState().Analyzer.GetAST().Node
 	return getFunctionName(node, position, source_code)
 }
 
@@ -88,6 +88,9 @@ func GetFunctionNameAtPosition(uri lsp.DocumentURI, position lsp.Position, sourc
 //
 //	string - The name of the function at the given position.
 func getFunctionName(node *sitter.Node, position lsp.Position, source_code []byte) string {
+	if node == nil {
+		return ""
+	}
 	nodeAtPosition := node.NamedDescendantForPointRange(
 		sitter.Point{
 			Row:    uint32(position.Line),
