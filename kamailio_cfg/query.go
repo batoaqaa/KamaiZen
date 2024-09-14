@@ -12,6 +12,7 @@ const (
 	_FUNCTION_QUERY           = "(function: (expression)) @function"
 	_STATEMENT_QUERY          = "(statement) @parent_statement"
 	_EXPRESSION_QUERY         = "(expression) @expression_statement"
+	_ASSINGMENT               = "(assignment_expression) @assignment_expression"
 )
 
 // QueryExecutor is a struct that encapsulates the execution of tree-sitter queries.

@@ -9,13 +9,19 @@ type ConfigurationItem struct {
 	Section  string `json:"section"`
 }
 
+// type ConfigurationResponse struct {
+// 	// it can be either	error or ConfigrationObject
+// 	Result interface{} `json:"result"`
+// }
+
 type ConfigurationResponse struct {
-	// it can be either	error or ConfigrationObject
-	Result interface{} `json:"result"`
+	Result []ConfigurationObject `json:"result"`
 }
 
 type ConfigurationObject struct {
-	Items []interface{} `json:"items"`
+	KamailioSourcePath          string `json:"kamailioSourcePath"`
+	Loglevel                    int    `json:"logLevel"`
+	EnableDeprecatedCommentHint bool   `json:"enableDeprecatedCommentHint"`
 }
 
 type ConfigurationItemValue struct {
@@ -38,7 +44,7 @@ type WorkspaceConfigurationRequest struct {
 
 type WorkspaceConfigurationResponse struct {
 	Response
-	Result ConfigurationResponse `json:"result"`
+	Result []ConfigurationObject `json:"result"`
 }
 
 func NewWorkspaceConfigurationRequest(id int, params ConfigurationParams) WorkspaceConfigurationRequest {

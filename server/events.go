@@ -82,27 +82,28 @@ func handleInitialize(contents []byte) {
 	}
 	logger.Infof("Connected to %s with version %s", request.Params.ClientInfo.Name, request.Params.ClientInfo.Version)
 	logger.Debug("Sending workspace configuration request")
-	config_request := lsp.NewWorkspaceConfigurationRequest(2, lsp.ConfigurationParams{
+	config_request := lsp.NewWorkspaceConfigurationRequest(request.ID, lsp.ConfigurationParams{
 		Items: []lsp.ConfigurationItem{
 			{
-				Section: "kamailio",
+				Section: "kamaizen",
 			},
 		},
 	})
+	logger.Debug("Sent workspace configuration request", config_request)
 	lsp.WriteResponse(config_request)
-	response := lsp.NewInitializeResponse(request.ID)
-	lsp.WriteResponse(response)
-	logger.Debug("Sent initialize response")
-	GetServerInstance().addKamailioMethods(settings.NewLSPSettings(response.Result[0].KamailioSourcePath, "", response.Result[0].Loglevel, response.Result[0].EnableDeprecatedCommentHint))
 }
 
-func handleWorkspaceConfiguration(contents []byte, analyser_channel chan state_manager.State) {
+func handleWorkspaceConfiguration(contents []byte) {
 	var response lsp.WorkspaceConfigurationResponse
 	if error := json.Unmarshal(contents, &response); error != nil {
 		logger.Error("Error unmarshalling workspace configuration response: ", error)
 		return
 	}
-	logger.Infof("Received workspace configuration response: %v", response)
+	var initialize_response lsp.InitializeResponse
+	initialize_response = lsp.NewInitializeResponse(response.ID)
+	lsp.WriteResponse(initialize_response)
+	logger.Debug("Sent initialize response")
+	GetServerInstance().addKamailioMethods(settings.NewLSPSettings(response.Result[0].KamailioSourcePath, "", response.Result[0].Loglevel, response.Result[0].EnableDeprecatedCommentHint))
 }
 
 // handleDidOpen handles the 'didOpen' notification.
@@ -214,6 +215,5 @@ func handleCompletion(contents []byte) {
 	}
 	logger.Debug("Completion request for document with URI: ", request.Params.TextDocument.URI)
 	response := state_manager.GetState().TextDocumentCompletion(request.ID, request.Params.TextDocument.URI, request.Params.Position)
-	logger.Debug("Sent completion response %v", response)
 	lsp.WriteResponse(response)
 }
