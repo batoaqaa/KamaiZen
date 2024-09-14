@@ -69,7 +69,7 @@ func createDiagnostic(
 //
 //	error - An error if the visit fails, otherwise nil.
 func (d *DiagnosticVisitor) Visit(node *ASTNode, a *Analyzer) error {
-	// TODO: Add diagnostics that can't be found using queries
+	// NOTE: Add diagnostics that can't be found using queries
 	// Visit and add diagnostics that can't be found using queries
 
 	// Traverse the children
@@ -182,7 +182,7 @@ func (d *DiagnosticVisitor) addDeprecatedCommentHints(node *ASTNode, a *Analyzer
 //	a *Analyzer - The analyzer used to get the parser and language information.
 func (d *DiagnosticVisitor) addUnreachableCodeWarnings(node *ASTNode, a *Analyzer) {
 	var diagnostics []lsp.Diagnostic
-	qe, err := NewQueryExecutor(_CORE_FUNCTION_QUERY, node.Node, a.GetParser().language)
+	qe, err := NewQueryExecutor(_RETURN_STATEMENTS_QUERY, node.Node, a.GetParser().language)
 	if err != nil {
 		logger.Error("Error creating query: ", err)
 		return
@@ -195,8 +195,7 @@ func (d *DiagnosticVisitor) addUnreachableCodeWarnings(node *ASTNode, a *Analyze
 		}
 		for _, capture := range match.Captures {
 			node := capture.Node
-			// go back to statement parent
-			s := node.Parent().Parent()
+			s := node.Parent()
 			if s.Type() == StatementNodeType && s.NextNamedSibling() != nil && s.NextNamedSibling().Type() == StatementNodeType {
 				// the next named siblings (statements) are unreachable
 				sibling_count := s.Parent().NamedChildCount()
@@ -213,11 +212,8 @@ func (d *DiagnosticVisitor) addUnreachableCodeWarnings(node *ASTNode, a *Analyze
 				if end_node.Type() == BlockEndNodeType {
 					end_node = end_node.PrevNamedSibling()
 				}
-				logger.Debug("Unreachable code found", start_node.Type(), end_node.Type())
 				diagnostics = append(diagnostics,
 					createDiagnostic("Unreachable code", start_node.StartPoint(), end_node.EndPoint(), lsp.WARNING))
-			} else {
-				logger.Error("Statement parent not found for core function")
 			}
 		}
 	}
@@ -289,6 +285,62 @@ func (d *DiagnosticVisitor) addInvalidExpressionErrors(node *ASTNode, a *Analyze
 	d.diagnostics = append(d.diagnostics, diagnostics...)
 }
 
+// addInvalidAssignmentExpressionErrors analyzes the given AST node for invalid assignment expressions
+// and adds corresponding diagnostic errors.
+//
+// Parameters:
+// - node: The AST node to analyze.
+// - a: The analyzer instance containing the parser and other analysis tools.
+//
+// This function ignores top-level assignments and only checks assignments within blocks.
+func (d *DiagnosticVisitor) addInvalidAssignmentExpressionErrors(node *ASTNode, a *Analyzer) {
+	var diagnostics []lsp.Diagnostic
+	// These should only be for within the block, top level assignments are to be ignored here
+	qe, err := NewQueryExecutor(_ASSINGMENT_EXPRESSION_QUERY, node.Node, a.GetParser().language)
+	if err != nil {
+		logger.Error("Error creating query: ", err)
+		return
+	}
+	for {
+		match, ok := qe.NextMatch()
+		if !ok {
+			break
+		}
+		for _, capture := range match.Captures {
+			node := capture.Node
+			// capture is statement -> expression -> assignment_expression
+			n := node.NamedChild(0)
+			n = n.NamedChild(0)
+			if n == nil {
+				diagnostics = append(diagnostics,
+					createDiagnostic("Invalid assignment expression", node.StartPoint(), node.EndPoint(), lsp.ERROR))
+				continue
+			}
+
+			if n.NamedChildCount() != 2 {
+				diagnostics = append(diagnostics,
+					createDiagnostic("Invalid assignment expression", node.StartPoint(), node.EndPoint(), lsp.ERROR))
+				continue
+			}
+
+			left := n.ChildByFieldName("left")
+			if left.Type() != PseudoVariableNodeType {
+				diagnostics = append(diagnostics,
+					createDiagnostic("Invalid assignment expression", node.StartPoint(), node.EndPoint(), lsp.ERROR))
+				continue
+			}
+
+			right := n.ChildByFieldName("right")
+			if right.Type() != ExpressionNodeType || right.NamedChild(0).Type() == IdentifierNodeType {
+				diagnostics = append(diagnostics,
+					createDiagnostic("Invalid value on the right side of expression", node.StartPoint(), node.EndPoint(), lsp.ERROR))
+				continue
+			}
+		}
+	}
+	d.diagnostics = append(d.diagnostics, diagnostics...)
+}
+
 // GetQueryDiagnostics collects various diagnostics for the given AST node.
 // It checks for invalid expressions, deprecated comments, unreachable code, and syntax errors,
 // and adds the corresponding diagnostics to the DiagnosticVisitor.
@@ -298,9 +350,12 @@ func (d *DiagnosticVisitor) addInvalidExpressionErrors(node *ASTNode, a *Analyze
 //	node *ASTNode - The AST node to be checked for diagnostics.
 //	a *Analyzer - The analyzer used to get the parser and language information.
 func (d *DiagnosticVisitor) GetQueryDiagnostics(node *ASTNode, a *Analyzer) {
+	// Since its not incremental, we can clear the diagnostics
+	d.diagnostics = nil
 	d.addInvalidExpressionErrors(node, a)
+	d.addInvalidAssignmentExpressionErrors(node, a)
 	d.addUnreachableCodeWarnings(node, a)
-	// d.addSyntaxErrors(node, a) TODO: enable after the false errors are fixed
+	// d.addSyntaxErrors(node, a) // TODO: enable after the false errors are fixed
 	if settings.GlobalSettings.DeprecatedCommentHints {
 		d.addDeprecatedCommentHints(node, a)
 	}

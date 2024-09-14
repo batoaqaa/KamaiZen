@@ -36,7 +36,7 @@ func AddLocalVariable(name string, value string, scope string, identifier string
 
 func ExtractGlobalVariables(a *Analyzer, source_code []byte) {
 	// extract global variables
-	q, err := NewQueryExecutor(_ASSINGMENT, a.ast.Node, a.builder.parser.language)
+	q, err := NewQueryExecutor(_ASSINGMENT_QUERY, a.ast.Node, a.builder.parser.language)
 	if err != nil {
 		logger.Error("Error creating query executor: ", err)
 		return

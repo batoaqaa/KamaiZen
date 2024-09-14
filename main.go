@@ -8,10 +8,7 @@ import (
 	"sync"
 )
 
-const CHAN_BUFFER = 24
-
 func initialise() {
-	// TODO: load settings from config file
 	logger.Info("Starting KamaiZen")
 	state_manager.InitializeState()
 	lsp.Initialise()

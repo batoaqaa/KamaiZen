@@ -148,8 +148,14 @@ func handleDidChange(contents []byte) {
 	for _, change := range notification.Params.ContentChanges {
 		diagnostics := state.UpdateDocument(notification.Params.TextDocument.URI, change.Text)
 		if len(diagnostics) > 0 {
+			logger.Debug("Sending diagnostics for document with URI: ", notification.Params.TextDocument.URI)
 			lsp.WriteResponse(lsp.NewPublishDiagnosticNotification(notification.Params.TextDocument.URI, diagnostics))
+		} else {
+			// clear diagnostics
+			logger.Debug("Clearing diagnostics for document with URI: ", notification.Params.TextDocument.URI)
+			lsp.WriteResponse(lsp.NewPublishDiagnosticNotification(notification.Params.TextDocument.URI, []lsp.Diagnostic{}))
 		}
+
 	}
 }
 

@@ -5,14 +5,16 @@ import (
 )
 
 const (
-	_ERROR_QUERY              = "(ERROR) @error"
-	_XML_QUERY                = "(xml) @xml"
-	_DEPRECATED_COMMENT_QUERY = "(deprecated_comment) @deprecated"
-	_CORE_FUNCTION_QUERY      = "(core_function) @statement"
-	_FUNCTION_QUERY           = "(function: (expression)) @function"
-	_STATEMENT_QUERY          = "(statement) @parent_statement"
-	_EXPRESSION_QUERY         = "(expression) @expression_statement"
-	_ASSINGMENT               = "(assignment_expression) @assignment_expression"
+	_ERROR_QUERY                 = "(ERROR) @error"
+	_XML_QUERY                   = "(xml) @xml"
+	_DEPRECATED_COMMENT_QUERY    = "(deprecated_comment) @deprecated"
+	_CORE_FUNCTION_QUERY         = "(core_function) @core_statement"
+	_RETURN_STATEMENTS_QUERY     = "(return_statement) @return"
+	_FUNCTION_QUERY              = "(function: (expression)) @function"
+	_STATEMENT_QUERY             = "(statement) @parent_statement"
+	_EXPRESSION_QUERY            = "(expression) @expression_statement"
+	_ASSINGMENT_QUERY            = "(assignment_expression) @assignment_expression"
+	_ASSINGMENT_EXPRESSION_QUERY = "(statement (expression (assignment_expression))) @assignment_expression"
 )
 
 // QueryExecutor is a struct that encapsulates the execution of tree-sitter queries.

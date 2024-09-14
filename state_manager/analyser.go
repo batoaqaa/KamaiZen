@@ -3,7 +3,6 @@ package state_manager
 import (
 	"KamaiZen/document_manager"
 	"KamaiZen/kamailio_cfg"
-	"KamaiZen/logger"
 	"KamaiZen/lsp"
 	"log"
 
@@ -175,6 +174,16 @@ func GetCompletionItems(uri lsp.DocumentURI) []lsp.CompletionItem {
 			Label:         variable,
 			Documentation: value.GetGlobalVariableDocs(),
 			Kind:          lsp.VARIABLE_COMPLETION,
+		})
+	}
+
+	modules := document_manager.GetAllAvailableModules()
+	for _, module := range modules {
+		completionItems = append(completionItems, lsp.CompletionItem{
+			Detail:        "Module",
+			Label:         module,
+			Documentation: "Module " + module,
+			Kind:          lsp.MODULE_COMPLETION,
 		})
 	}
 	return completionItems

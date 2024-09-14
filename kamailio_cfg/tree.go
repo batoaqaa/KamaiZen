@@ -14,6 +14,7 @@ const (
 	CompoundStatementNodeType       = "compound_statement"
 	CallExpressionNodeType          = "call_expression"
 	IdentifierNodeType              = "identifier"
+	PseudoVariableNodeType          = "pseudo_variable"
 	ExpressionNodeType              = "expression"
 	BlockEndNodeType                = "block_end"
 	UnaryExpressionNodeType         = "unary_expression"

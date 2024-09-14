@@ -7,29 +7,32 @@ For syntax highlighting, use [tree-sitter-kamailio-cfg](https://github.com/Ibrah
 ## Features
 - [ ] Code completion
     - [ ] Variables
-    - [x] Functions
-    - [ ] Modules
-    - [ ] Keywords
+      - [x] Global variables (avps)
+      - [ ] Local variables (vars)
+    - [x] exported functions
+    - [x] Modules
+    - [x] Keywords
     - [ ] Parameters
-    - [x] Headers
 - [ ] Code navigation
-  - [ ] Go to definition - In progress
-  - [ ] Find references - In progress
+  - [ ] Go to definition for routes - In progress
+  - [ ] Find references for routes - In progress
+- [ ] Code Actions
+  - [ ] Add missing modules
 - [ ] Code formatting
 - [ ] Code folding
 - [ ] Diagnostics
-    - [x] Syntax Errors
+    - [x] Syntax Errors -- Buggy (requires re-work on the parser)
     - [x] Invalid statements
     - [x] Unreachable code
+    - [x] Assignment Errors
+    - [ ] Function calls from non-loaded modules
     - [ ] Unused variables
-    - [ ] Unused functions
     - [ ] Unused modules
     - [ ] Unused parameters
 - [ ] Hover
     - [x] Show documentation
-    - [ ] Show type
-- [ ] Highlight
 
+> Note: This is a work in progress, and not all features are available yet.
 
 ## Installation
 
