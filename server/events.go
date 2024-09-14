@@ -82,32 +82,27 @@ func handleInitialize(contents []byte) {
 	}
 	logger.Infof("Connected to %s with version %s", request.Params.ClientInfo.Name, request.Params.ClientInfo.Version)
 	logger.Debug("Sending workspace configuration request")
-	config_request := lsp.NewWorkspaceConfigurationRequest(request.ID, lsp.ConfigurationParams{
+	config_request := lsp.NewWorkspaceConfigurationRequest(2, lsp.ConfigurationParams{
 		Items: []lsp.ConfigurationItem{
 			{
-				Section: "kamaizen",
+				Section: "kamailio",
 			},
 		},
 	})
-	logger.Debug("Sent workspace configuration request", config_request)
 	lsp.WriteResponse(config_request)
+	response := lsp.NewInitializeResponse(request.ID)
+	lsp.WriteResponse(response)
+	logger.Debug("Sent initialize response")
+	GetServerInstance().addKamailioMethods(settings.NewLSPSettings(response.Result[0].KamailioSourcePath, "", response.Result[0].Loglevel, response.Result[0].EnableDeprecatedCommentHint))
 }
 
-// handleWorkspaceConfiguration processes the workspace configuration response.
-// It unmarshals the JSON contents into a WorkspaceConfigurationResponse object,
-// logs any errors encountered during unmarshalling, and sends an initialize response.
-// It also adds Kamailio methods to the server documentation on hover and completion items based on the kamailioSourcePath provided in the configuration.
-func handleWorkspaceConfiguration(contents []byte) {
+func handleWorkspaceConfiguration(contents []byte, analyser_channel chan state_manager.State) {
 	var response lsp.WorkspaceConfigurationResponse
 	if error := json.Unmarshal(contents, &response); error != nil {
 		logger.Error("Error unmarshalling workspace configuration response: ", error)
 		return
 	}
-	var initialize_response lsp.InitializeResponse
-	initialize_response = lsp.NewInitializeResponse(response.ID)
-	lsp.WriteResponse(initialize_response)
-	logger.Debug("Sent initialize response")
-	GetServerInstance().addKamailioMethods(settings.NewLSPSettings(response.Result[0].KamailioSourcePath, "", response.Result[0].Loglevel, response.Result[0].EnableDeprecatedCommentHint))
+	logger.Infof("Received workspace configuration response: %v", response)
 }
 
 // handleDidOpen handles the 'didOpen' notification.

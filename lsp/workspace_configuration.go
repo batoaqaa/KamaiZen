@@ -10,13 +10,12 @@ type ConfigurationItem struct {
 }
 
 type ConfigurationResponse struct {
-	Result []ConfigurationObject `json:"result"`
+	// it can be either	error or ConfigrationObject
+	Result interface{} `json:"result"`
 }
 
 type ConfigurationObject struct {
-	KamailioSourcePath          string `json:"kamailioSourcePath"`
-	Loglevel                    int    `json:"logLevel"`
-	EnableDeprecatedCommentHint bool   `json:"enableDeprecatedCommentHint"`
+	Items []interface{} `json:"items"`
 }
 
 type ConfigurationItemValue struct {
@@ -39,7 +38,7 @@ type WorkspaceConfigurationRequest struct {
 
 type WorkspaceConfigurationResponse struct {
 	Response
-	Result []ConfigurationObject `json:"result"`
+	Result ConfigurationResponse `json:"result"`
 }
 
 func NewWorkspaceConfigurationRequest(id int, params ConfigurationParams) WorkspaceConfigurationRequest {
