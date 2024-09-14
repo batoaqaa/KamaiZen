@@ -227,7 +227,7 @@ func GetFunctionDoc(moduleName string, functionName string) string {
 func FindFunctionInAllModules(functionName string) string {
 	for moduleName, moduleDocs := range moduleDocumentationMapInstance.ModuleDocs {
 		if _, exists := moduleDocs.Functions[moduleName].Functions[functionName]; exists {
-			return "# Module: \n\t" + moduleName + "\n\n" + moduleDocs.GetFunctionDocAsString(moduleName, functionName)
+			return "# Module: " + moduleName + "\n\n" + moduleDocs.GetFunctionDocAsString(moduleName, functionName)
 		}
 	}
 	return "Function not found"
