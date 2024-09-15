@@ -49,7 +49,7 @@ func ExtractGlobalVariables(a *Analyzer, source_code []byte) {
 		for _, capture := range match.Captures {
 			node := capture.Node
 			variable := node.ChildByFieldName("left")
-			if variable.Type() == "pseudo_variable" {
+			if variable.Type() == "pseudo_variable" || variable.Type() == "pvar_expression" {
 				pc := variable.NamedChild(0)
 				if pc.Type() == "pseudo_content" {
 					avp := pc.NamedChild(0)

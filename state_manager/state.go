@@ -1,7 +1,6 @@
 package state_manager
 
 import (
-	"KamaiZen/document_manager"
 	"KamaiZen/kamailio_cfg"
 	"KamaiZen/logger"
 	"KamaiZen/lsp"
@@ -21,7 +20,6 @@ var state State
 //
 //	*State - The current state.
 func GetState() *State {
-	logger.Debug("Getting state")
 	return &state
 }
 
@@ -162,13 +160,8 @@ func (s *State) UpdateDocument(uri lsp.DocumentURI, text string) []lsp.Diagnosti
 //
 //	lsp.HoverResponse - The hover response.
 func (s *State) Hover(id int, uri lsp.DocumentURI, position lsp.Position) lsp.HoverResponse {
-	logger.Debug("Within Hover ")
-	text := s.Documents[uri]
-	functionName := GetFunctionNameAtPosition(uri, position, []byte(text))
-	logger.Debug("Function name at position: ", functionName)
-	documentation := document_manager.FindFunctionInAllModules(functionName)
-	logger.Debug("Documentation: ", documentation)
-	return lsp.NewHoverResponse(id, fmt.Sprintf("%s", documentation))
+	return lsp.NewHoverResponse(id,
+		fmt.Sprintf("%s", GetNodeDocsAtPosition(uri, position, []byte(s.Documents[uri]))))
 }
 
 // Definition returns the definition information for the given document URI and position.

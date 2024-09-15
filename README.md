@@ -18,6 +18,12 @@ For syntax highlighting, use [tree-sitter-kamailio-cfg](https://github.com/Ibrah
   - [ ] Find references for routes - In progress
 - [ ] Code Actions
   - [ ] Add missing modules
+- [ ] Snippets
+  - [ ] Route snippets
+  - [ ] Module snippets
+  - [ ] Ifblock snippets
+  - [ ] loop snippets
+  - [ ] switch snippets
 - [ ] Code formatting
 - [ ] Code folding
 - [ ] Diagnostics

@@ -3,6 +3,7 @@ package state_manager
 import (
 	"KamaiZen/document_manager"
 	"KamaiZen/kamailio_cfg"
+	"KamaiZen/logger"
 	"KamaiZen/lsp"
 	"log"
 
@@ -60,20 +61,47 @@ func (s *StateTree) TraverseNode(uri lsp.DocumentURI, node *sitter.Node, logger 
 	}
 }
 
-// GetFunctionNameAtPosition returns the name of the function at the given position in the document.
-//
+// GetNodeDocsAtPosition retrieves the documentation for the node at the given position in the source code.
 // Parameters:
-//
-//	uri lsp.DocumentURI - The URI of the document.
-//	position lsp.Position - The position within the document.
-//	source_code []byte - The source code of the document.
-//
+// - uri: The URI of the document.
+// - position: The position within the document.
+// - source_code: The source code as a byte slice.
 // Returns:
-//
-//	string - The name of the function at the given position.
-func GetFunctionNameAtPosition(uri lsp.DocumentURI, position lsp.Position, source_code []byte) string {
+// - The documentation string for the node at the specified position.
+func GetNodeDocsAtPosition(uri lsp.DocumentURI, position lsp.Position, source_code []byte) string {
 	node := GetState().Analyzer.GetAST().Node
-	return getFunctionName(node, position, source_code)
+	nodeAtPosition := getNodeAtPosition(node, position)
+	switch {
+	case nodeAtPosition == nil:
+		logger.Error("Node at position is nil")
+		return ""
+	case nodeAtPosition.Type() == kamailio_cfg.IdentifierNodeType:
+		functionName := getFunctionName(nodeAtPosition, source_code)
+		return document_manager.FindFunctionInAllModules(functionName)
+	}
+	return ""
+}
+
+// getNodeAtPosition finds the node at the specified position within the given AST node.
+// Parameters:
+// - node: The root AST node.
+// - position: The position within the document.
+// Returns:
+// - The node at the specified position or nil if no such node exists.
+func getNodeAtPosition(node *sitter.Node, position lsp.Position) *sitter.Node {
+	if node == nil {
+		return nil
+	}
+	nodeAtPosition := node.NamedDescendantForPointRange(
+		sitter.Point{
+			Row:    uint32(position.Line),
+			Column: uint32(position.Character),
+		},
+		sitter.Point{
+			Row:    uint32(position.Line),
+			Column: uint32(position.Character),
+		})
+	return nodeAtPosition
 }
 
 // getFunctionName returns the name of the function at the given position in the AST node.
@@ -87,21 +115,16 @@ func GetFunctionNameAtPosition(uri lsp.DocumentURI, position lsp.Position, sourc
 // Returns:
 //
 //	string - The name of the function at the given position.
-func getFunctionName(node *sitter.Node, position lsp.Position, source_code []byte) string {
+func getFunctionName(node *sitter.Node, source_code []byte) string {
 	if node == nil {
 		return ""
 	}
-	nodeAtPosition := node.NamedDescendantForPointRange(
-		sitter.Point{
-			Row:    uint32(position.Line),
-			Column: uint32(position.Character),
-		},
-		sitter.Point{
-			Row:    uint32(position.Line),
-			Column: uint32(position.Character),
-		})
-	functionName := nodeAtPosition.Content(source_code)
-	return functionName
+	if node.Type() == kamailio_cfg.IdentifierNodeType &&
+		node.Parent().Parent().Type() == kamailio_cfg.CallExpressionNodeType &&
+		node.Parent().Parent().FieldNameForChild(0) == "function" {
+		return node.Content(source_code)
+	}
+	return ""
 }
 
 // TraverseNodeAndApply traverses the AST starting from the given node and applies the given function to each node.

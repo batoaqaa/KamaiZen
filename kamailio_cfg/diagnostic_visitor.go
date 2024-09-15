@@ -319,14 +319,15 @@ func (d *DiagnosticVisitor) addInvalidAssignmentExpressionErrors(node *ASTNode, 
 
 			if n.NamedChildCount() != 2 {
 				diagnostics = append(diagnostics,
-					createDiagnostic("Invalid assignment expression", node.StartPoint(), node.EndPoint(), lsp.ERROR))
+					createDiagnostic("Invalid assignment expression, left and right side are not valid", node.StartPoint(), node.EndPoint(), lsp.ERROR))
 				continue
 			}
 
 			left := n.ChildByFieldName("left")
-			if left.Type() != PseudoVariableNodeType {
+			if left.Type() != PseudoVariableNodeType && left.Type() != PseudoVariableExpressionNodeType {
+				logger.Debug("Invalid assignment: left-hand-side ", left.Type())
 				diagnostics = append(diagnostics,
-					createDiagnostic("Invalid assignment expression", node.StartPoint(), node.EndPoint(), lsp.ERROR))
+					createDiagnostic("Invalid assignment: left-hand-side ", node.StartPoint(), node.EndPoint(), lsp.ERROR))
 				continue
 			}
 
