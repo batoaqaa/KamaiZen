@@ -6,6 +6,7 @@ import (
 	"KamaiZen/logger"
 	"KamaiZen/lsp"
 	"log"
+	"regexp"
 
 	sitter "github.com/smacker/go-tree-sitter"
 )
@@ -71,15 +72,52 @@ func (s *StateTree) TraverseNode(uri lsp.DocumentURI, node *sitter.Node, logger 
 func GetNodeDocsAtPosition(uri lsp.DocumentURI, position lsp.Position, source_code []byte) string {
 	node := GetState().Analyzer.GetAST().Node
 	nodeAtPosition := getNodeAtPosition(node, position)
-	switch {
-	case nodeAtPosition == nil:
+	if nodeAtPosition == nil {
 		logger.Error("Node at position is nil")
 		return ""
-	case nodeAtPosition.Type() == kamailio_cfg.IdentifierNodeType:
-		functionName := getFunctionName(nodeAtPosition, source_code)
-		return document_manager.FindFunctionInAllModules(functionName)
 	}
-	return ""
+	switch nodeAtPosition.Type() {
+	case kamailio_cfg.IdentifierNodeType:
+		switch nodeAtPosition.Parent().Parent().Type() {
+		case kamailio_cfg.CallExpressionNodeType:
+			functionName := getFunctionName(nodeAtPosition, source_code)
+			return document_manager.FindFunctionInAllModules(functionName)
+		case kamailio_cfg.AVPNodeType:
+			variableName := nodeAtPosition.Content(source_code)
+			v := kamailio_cfg.GetAVPVariable(variableName)
+			return v.GetDocs()
+		case kamailio_cfg.VARNodeType:
+			variableName := nodeAtPosition.Content(source_code)
+			v := kamailio_cfg.GetLocalVariable(variableName)
+			return v.GetDocs()
+		case kamailio_cfg.DlgVarNodeType:
+			variableName := nodeAtPosition.Content(source_code)
+			v := kamailio_cfg.GetDlgVariable(variableName)
+			return v.GetDocs()
+		}
+	case kamailio_cfg.AVPNodeType:
+		variableName := nodeAtPosition.ChildByFieldName("name").NamedChild(0).Content(source_code)
+		v := kamailio_cfg.GetAVPVariable(variableName)
+		return v.GetDocs()
+	case kamailio_cfg.VARNodeType:
+		variableName := nodeAtPosition.ChildByFieldName("name").NamedChild(0).Content(source_code)
+		v := kamailio_cfg.GetLocalVariable(variableName)
+		return v.GetDocs()
+	case kamailio_cfg.DlgVarNodeType:
+		variableName := nodeAtPosition.ChildByFieldName("name").NamedChild(0).Content(source_code)
+		v := kamailio_cfg.GetDlgVariable(variableName)
+		return v.GetDocs()
+	}
+	word := nodeAtPosition.Content(source_code)
+	// drop special characters
+	var nonAlphanumericRegex = regexp.MustCompile(`[^a-zA-Z0-9 _]+`)
+	key := nonAlphanumericRegex.ReplaceAllString(word, "")
+	docs := document_manager.GetCookBookDocs(key)
+	if docs != "" {
+		return docs
+	}
+	logger.Error("Documentation not found", word, key)
+	return "Documentation not found"
 }
 
 // getNodeAtPosition finds the node at the specified position within the given AST node.
@@ -190,18 +228,37 @@ func GetCompletionItems(uri lsp.DocumentURI) []lsp.CompletionItem {
 		})
 	}
 
-	variables := kamailio_cfg.GetGlobalVariables()
+	variables := kamailio_cfg.GetAVPVariables()
 	for variable, value := range variables {
 		completionItems = append(completionItems, lsp.CompletionItem{
 			Detail:        "AVP",
 			Label:         variable,
-			Documentation: value.GetGlobalVariableDocs(),
+			Documentation: value.GetDocs(),
 			Kind:          lsp.VARIABLE_COMPLETION,
 		})
 	}
 
-	modules := document_manager.GetAllAvailableModules()
-	for _, module := range modules {
+	localVariables := kamailio_cfg.GetLocalVariables()
+	for variable, value := range localVariables {
+		completionItems = append(completionItems, lsp.CompletionItem{
+			Detail:        "Local Variable",
+			Label:         variable,
+			Documentation: value.GetDocs(),
+			Kind:          lsp.VARIABLE_COMPLETION,
+		})
+	}
+
+	dlgVariables := kamailio_cfg.GetDlgVariables()
+	for variable, value := range dlgVariables {
+		completionItems = append(completionItems, lsp.CompletionItem{
+			Detail:        "Dialog Variable",
+			Label:         variable,
+			Documentation: value.GetDocs(),
+			Kind:          lsp.VARIABLE_COMPLETION,
+		})
+	}
+
+	for module := range document_manager.GetAllAvailableModules() {
 		completionItems = append(completionItems, lsp.CompletionItem{
 			Detail:        "Module",
 			Label:         module,
@@ -209,6 +266,16 @@ func GetCompletionItems(uri lsp.DocumentURI) []lsp.CompletionItem {
 			Kind:          lsp.MODULE_COMPLETION,
 		})
 	}
+
+	for c := range document_manager.GetAllCookBookKeys() {
+		completionItems = append(completionItems, lsp.CompletionItem{
+			Detail:        "Cookbook",
+			Label:         c,
+			Documentation: document_manager.GetCookBookDocs(c),
+			Kind:          lsp.VARIABLE_COMPLETION,
+		})
+	}
+
 	return completionItems
 
 }
