@@ -8,7 +8,7 @@ local server = {
   cmd = { vim.fn.stdpath 'data' .. '/lazy/KamaiZen/KamaiZen' },
 
   cmd_cwd = vim.fn.getcwd(),
-  filetypes = { 'cfg', 'inc', 'kamailio' },
+  filetypes = { 'kamailio' },
   root_dir = vim.fn.getcwd(),
   capabilities = capabilities,
   autostart = true,
