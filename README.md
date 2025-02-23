@@ -20,7 +20,8 @@
 
 Watch a demo of KamaiZen in action:
 
-https://raw.githubusercontent.com/IbrahimShahzad/KamaiZen/master/docs/demo.mp4
+https://github.com/user-attachments/assets/99cedc2d-92c2-4e15-b5c8-aa0fc9f49fc6
+
 
 ### Code completion
 
