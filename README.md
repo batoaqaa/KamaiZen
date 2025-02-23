@@ -20,7 +20,7 @@
 
 Watch a demo of KamaiZen in action:
 
-[![KamaiZen Demo](https://img.youtube.com/vi/IbnZwrY13IY/hqdefault.jpg)](https://www.youtube.com/watch?v=IbnZwrY13IY)
+https://raw.githubusercontent.com/IbrahimShahzad/KamaiZen/master/docs/demo.mp4
 
 ### Code completion
 
