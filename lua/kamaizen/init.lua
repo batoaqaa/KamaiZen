@@ -3,23 +3,20 @@ vim.filetype.add {
     -- change *.cfg files to kamailio file type only for any of the below condition
     cfg = function()
       --Special Regex Characters: ., +, *, ?, ^, $, (, ), [, ], {, }, |, \
-      if vim.fn.search [[^\s*#!\(KAMAILIO\|OPENSER\|SER\|ALL\|MAXCOMPAT\)]] > 0 then
-        vim.api.nvim_win_set_cursor(0, { 1, 0 })
+      --vim.fn.search -> search for pattern, return line number. 'n' flag to not move cursor
+      if vim.fn.search([[^\s*#!\(KAMAILIO\|OPENSER\|SER\|ALL\|MAXCOMPAT\)]], [[n]]) > 0 then
         return 'kamailio'
-      elseif vim.fn.search [[^\s*\(request_r\|r\|branch_r\|failure_r\|reply_r\|onreply_r\|onsend_r\|event_r\)oute.*\_s*{\s*]] > 0 then
-        vim.api.nvim_win_set_cursor(0, { 1, 0 })
+      elseif vim.fn.search([[^\s*\(request_r\|r\|branch_r\|failure_r\|reply_r\|onreply_r\|onsend_r\|event_r\)oute.*\_s*{\s*]], [[n]]) > 0 then
         return 'kamailio'
-      elseif vim.fn.search [[^\s*\(#\|!\)!\(define\|ifdef\|ifndef\|endif\|subst\|substdef\)]] > 0 then
-        vim.api.nvim_win_set_cursor(0, { 1, 0 })
+      elseif vim.fn.search([[^\s*\(#\|!\)!\(define\|ifdef\|ifndef\|endif\|subst\|substdef\)]], [[n]]) > 0 then
         return 'kamailio'
-      elseif vim.fn.search [[^\s*modparam\s*(\s*"[^"]\+"]] > 0 then
-        vim.api.nvim_win_set_cursor(0, { 1, 0 })
+      elseif vim.fn.search([[^\s*modparam\s*(\s*"[^"]\+"]], [[n]]) > 0 then
         return 'kamailio'
-      elseif vim.fn.search [[^\s*loadmodule\s]] > 0 then
-        vim.api.nvim_win_set_cursor(0, { 1, 0 })
+      elseif vim.fn.search([=[^\[\(client\|server\):.*\]]=], [[n]]) > 0 then
         return 'kamailio'
-      elseif vim.fn.search [[^\s*\(include\|import\)_file]] > 0 then
-        vim.api.nvim_win_set_cursor(0, { 1, 0 })
+      elseif vim.fn.search([[^\s*loadmodule\s]], [[n]]) > 0 then
+        return 'kamailio'
+      elseif vim.fn.search([[^\s*\(include\|import\)_file]], [[n]]) > 0 then
         return 'kamailio'
       end
     end,
@@ -45,11 +42,19 @@ local parser_config = parsers.get_parser_configs()
 if not parser_config['kamailio_cfg'] then
   parser_config['kamailio_cfg'] = {
     install_info = {
-      url = 'https://github.com/IbrahimShahzad/tree-sitter-kamailio-cfg',
-      files = { 'src/parser.c' }, -- note that some parsers also require src/scanner.c or src/scanner.cc
-      branch = 'v0.1.3',
-      generate_requires_npm = false, -- if stand-alone parser without npm dependencies
-      requires_generate_from_grammar = false, -- if folder contains pre-generated src/parser.c
+      -- no need to re-download parser.c from  "https://github.com/IbrahimShahzad/tree-sitter-kamailio-cfg"
+      -- as it has been already download with KamaiZen plugin in kamailio_cfg folder
+      url = vim.fn.stdpath 'data' .. '/lazy/KamaiZen/',
+      files = { 'kamailio_cfg/parser.c' }, -- note that some parsers also require src/scanner.c or src/scanner.cc
+
+      -- url = 'https://github.com/IbrahimShahzad/tree-sitter-kamailio-cfg',
+      -- files = { 'src/parser.c' }, -- note that some parsers also require src/scanner.c or src/scanner.cc
+
+      -- optional entries:
+      -- branch = 'main', -- default branch in case of git repo if different from master
+      -- revision = 'v0.1.3',
+      -- generate_requires_npm = false, -- if stand-alone parser without npm dependencies
+      -- requires_generate_from_grammar = false, -- if folder contains pre-generated src/parser.c
     },
     filetype = 'kamailio', -- if filetype does not match the parser name
   }
