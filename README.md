@@ -53,6 +53,10 @@ https://github.com/user-attachments/assets/99cedc2d-92c2-4e15-b5c8-aa0fc9f49fc6
 
 - [x] Go to definition for routes: This currently works with the routes defined in current file.
 
+### Code Formatting
+
+- [x] Basic indentation
+
 ---
 
 > [!Note]
